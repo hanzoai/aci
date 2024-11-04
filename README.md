@@ -1,3 +1,3 @@
-# Agent IDE
+# Agent-Computer Interface (ACI) for OpenHands
 
-An IDE for software development agents.
+An Agent-Computer Interface (ACI) designed for software development agents [OpenHands](https://github.com/All-Hands-AI/OpenHands).
