@@ -18,7 +18,7 @@ install-pre-commit-hooks:
 
 lint-python:
 	@echo "$(YELLOW)Running linters...$(RESET)"
-	@poetry run pre-commit run --files agent_ide/**/* tests/**/* --show-diff-on-failure --config $(PRE_COMMIT_CONFIG_PATH)
+	@poetry run pre-commit run --files openhands_aci/**/* tests/**/* --show-diff-on-failure --config $(PRE_COMMIT_CONFIG_PATH)
 
 lint:
 	@$(MAKE) -s lint-python

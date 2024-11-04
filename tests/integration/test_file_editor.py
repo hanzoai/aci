@@ -1,12 +1,12 @@
 import pytest
 
-from agent_ide.editor.editor import OHEditor
-from agent_ide.editor.exceptions import (
+from openhands_aci.editor.editor import OHEditor
+from openhands_aci.editor.exceptions import (
     EditorToolParameterInvalidError,
     EditorToolParameterMissingError,
     ToolError,
 )
-from agent_ide.editor.results import CLIResult, ToolResult
+from openhands_aci.editor.results import CLIResult, ToolResult
 
 
 @pytest.fixture

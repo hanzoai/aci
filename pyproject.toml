@@ -6,7 +6,7 @@ authors = ["OpenHands"]
 license = "MIT"
 readme = "README.md"
 packages = [
-  { include = "agent_ide/**/*" }
+  { include = "openhands_aci/**/*" }
 ]
 
 [tool.poetry.dependencies]
