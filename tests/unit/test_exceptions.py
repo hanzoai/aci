@@ -1,6 +1,6 @@
 import pytest
 
-from agent_ide.editor.exceptions import (
+from openhands_aci.editor.exceptions import (
     EditorToolParameterInvalidError,
     EditorToolParameterMissingError,
     ToolError,

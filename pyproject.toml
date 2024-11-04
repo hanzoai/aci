@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "agent-ide"
+name = "openhands-aci"
 version = "0.0.1"
-description = "An IDE for software development agents."
+description = "An Agent-Computer Interface (ACI) designed for software development agents OpenHands."
 authors = ["OpenHands"]
 license = "MIT"
 readme = "README.md"
 packages = [
-  { include = "agent_ide/**/*" }
+  { include = "openhands_aci/**/*" }
 ]
 
 [tool.poetry.dependencies]
