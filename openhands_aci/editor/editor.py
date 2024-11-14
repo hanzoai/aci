@@ -1,6 +1,10 @@
+import tempfile
 from collections import defaultdict
 from pathlib import Path
 from typing import Literal, get_args
+
+from openhands_aci.linter import DefaultLinter
+from openhands_aci.utils.shell import run_shell_cmd
 
 from .config import SNIPPET_CONTEXT_WINDOW
 from .exceptions import (
@@ -9,7 +13,6 @@ from .exceptions import (
     ToolError,
 )
 from .results import CLIResult, ToolResult, maybe_truncate
-from .shell import run_shell_cmd
 
 Command = Literal[
     'view',
@@ -36,8 +39,9 @@ class OHEditor:
 
     TOOL_NAME = 'oh_editor'
 
-    def __init__(self) -> None:
+    def __init__(self):
         self._file_history: dict[Path, list[str]] = defaultdict(list)
+        self._linter = DefaultLinter()
 
     def __call__(
         self,
@@ -49,6 +53,7 @@ class OHEditor:
         old_str: str | None = None,
         new_str: str | None = None,
         insert_line: int | None = None,
+        enable_linting: bool = False,
         **kwargs,
     ) -> ToolResult | CLIResult:
         _path = Path(path)
@@ -64,13 +69,13 @@ class OHEditor:
         elif command == 'str_replace':
             if not old_str:
                 raise EditorToolParameterMissingError(command, 'old_str')
-            return self.str_replace(_path, old_str, new_str)
+            return self.str_replace(_path, old_str, new_str, enable_linting)
         elif command == 'insert':
             if insert_line is None:
                 raise EditorToolParameterMissingError(command, 'insert_line')
             if not new_str:
                 raise EditorToolParameterMissingError(command, 'new_str')
-            return self.insert(_path, insert_line, new_str)
+            return self.insert(_path, insert_line, new_str, enable_linting)
         elif command == 'undo_edit':
             return self.undo_edit(_path)
 
@@ -78,7 +83,9 @@ class OHEditor:
             f'Unrecognized command {command}. The allowed commands for the {self.TOOL_NAME} tool are: {", ".join(get_args(Command))}'
         )
 
-    def str_replace(self, path: Path, old_str: str, new_str: str | None) -> CLIResult:
+    def str_replace(
+        self, path: Path, old_str: str, new_str: str | None, enable_linting: bool
+    ) -> CLIResult:
         """
         Implement the str_replace command, which replaces old_str with new_str in the file content.
         """
@@ -119,12 +126,18 @@ class OHEditor:
         snippet = '\n'.join(new_file_content.split('\n')[start_line : end_line + 1])
 
         # Prepare the success message
-        success_msg = f'The file {path} has been edited. '
-        success_msg += self._make_output(
+        success_message = f'The file {path} has been edited. '
+        success_message += self._make_output(
             snippet, f'a snippet of {path}', start_line + 1
         )
-        success_msg += 'Review the changes and make sure they are as expected. Edit the file again if necessary.'
-        return CLIResult(output=success_msg)
+
+        if enable_linting:
+            # Run linting on the changes
+            lint_results = self._run_linting(file_content, new_file_content, path)
+            success_message += '\n' + lint_results + '\n'
+
+        success_message += 'Review the changes and make sure they are as expected. Edit the file again if necessary.'
+        return CLIResult(output=success_message)
 
     def view(self, path: Path, view_range: list[int] | None = None) -> CLIResult:
         """
@@ -198,7 +211,9 @@ class OHEditor:
         except Exception as e:
             raise ToolError(f'Ran into {e} while trying to write to {path}') from None
 
-    def insert(self, path: Path, insert_line: int, new_str: str) -> CLIResult:
+    def insert(
+        self, path: Path, insert_line: int, new_str: str, enable_linting: bool
+    ) -> CLIResult:
         """
         Implement the insert command, which inserts new_str at the specified line in the file content.
         """
@@ -245,6 +260,12 @@ class OHEditor:
             'a snippet of the edited file',
             max(1, insert_line - SNIPPET_CONTEXT_WINDOW + 1),
         )
+
+        if enable_linting:
+            # Run linting on the changes
+            lint_results = self._run_linting(file_text, new_file_text, path)
+            success_message += '\n' + lint_results + '\n'
+
         success_message += 'Review the changes and make sure they are as expected (correct indentation, no duplicate lines, etc). Edit the file again if necessary.'
         return CLIResult(output=success_message)
 
@@ -328,3 +349,31 @@ class OHEditor:
             + snippet_content
             + '\n'
         )
+
+    def _run_linting(self, old_content: str, new_content: str, path: Path) -> str:
+        """
+        Run linting on file changes and return formatted results.
+        """
+        # Create a temporary directory
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create paths with exact filenames in temp directory
+            temp_old = Path(temp_dir) / f'old.{path.name}'
+            temp_new = Path(temp_dir) / f'new.{path.name}'
+
+            # Write content to temporary files
+            temp_old.write_text(old_content)
+            temp_new.write_text(new_content)
+
+            # Run linting on the changes
+            results = self._linter.lint_file_diff(str(temp_old), str(temp_new))
+
+            if not results:
+                return 'No linting issues found in the changes.'
+
+            # Format results
+            output = ['Linting issues found in the changes:']
+            for result in results:
+                output.append(
+                    f'- Line {result.line}, Column {result.column}: {result.message}'
+                )
+            return '\n'.join(output) + '\n'
