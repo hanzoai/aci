@@ -12,7 +12,7 @@ from .exceptions import (
     EditorToolParameterMissingError,
     ToolError,
 )
-from .results import CLIResult, ToolResult, maybe_truncate
+from .results import CLIResult, maybe_truncate
 
 Command = Literal[
     'view',
@@ -55,17 +55,21 @@ class OHEditor:
         insert_line: int | None = None,
         enable_linting: bool = False,
         **kwargs,
-    ) -> ToolResult | CLIResult:
+    ) -> CLIResult:
         _path = Path(path)
         self.validate_path(command, _path)
         if command == 'view':
             return self.view(_path, view_range)
         elif command == 'create':
             if not file_text:
-                raise
+                raise EditorToolParameterMissingError(command, 'file_text')
             self.write_file(_path, file_text)
             self._file_history[_path].append(file_text)
-            return ToolResult(output=f'File created successfully at: {_path}')
+            return CLIResult(
+                path=str(_path),
+                prev_exist=False,
+                output=f'File created successfully at: {_path}',
+            )
         elif command == 'str_replace':
             if not old_str:
                 raise EditorToolParameterMissingError(command, 'old_str')
@@ -143,7 +147,13 @@ class OHEditor:
             success_message += '\n' + lint_results + '\n'
 
         success_message += 'Review the changes and make sure they are as expected. Edit the file again if necessary.'
-        return CLIResult(output=success_message)
+        return CLIResult(
+            output=success_message,
+            prev_exist=True,
+            path=str(path),
+            old_content=file_content,
+            new_content=new_file_content,
+        )
 
     def view(self, path: Path, view_range: list[int] | None = None) -> CLIResult:
         """
@@ -273,7 +283,13 @@ class OHEditor:
             success_message += '\n' + lint_results + '\n'
 
         success_message += 'Review the changes and make sure they are as expected (correct indentation, no duplicate lines, etc). Edit the file again if necessary.'
-        return CLIResult(output=success_message)
+        return CLIResult(
+            output=success_message,
+            prev_exist=True,
+            path=str(path),
+            old_content=file_text,
+            new_content=new_file_text,
+        )
 
     def validate_path(self, command: Command, path: Path) -> None:
         """
