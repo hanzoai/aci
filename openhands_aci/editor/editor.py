@@ -176,7 +176,7 @@ class OHEditor:
 
             # First count hidden files/dirs
             _, hidden_stdout, _ = run_shell_cmd(
-                rf"find -L {path} -maxdepth 2 -path '*/\.*' -not -path '*/\.' -not -path '*/\..'"
+                rf"find -L {path} -maxdepth 2 -path '{path}/\.*' -not -path '{path}/\.' -not -path '{path}/\..'"
             )
             hidden_count = (
                 len(hidden_stdout.strip().split('\n')) if hidden_stdout.strip() else 0
@@ -184,7 +184,7 @@ class OHEditor:
 
             # Then get non-hidden files/dirs
             _, stdout, stderr = run_shell_cmd(
-                rf"find -L {path} -maxdepth 2 -not -path '*/\.*'",
+                rf"find -L {path} -maxdepth 2 -not -path '{path}/\.*'",
                 truncate_notice=DIRECTORY_CONTENT_TRUNCATED_NOTICE,
             )
             if not stderr:
