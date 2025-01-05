@@ -401,6 +401,11 @@ def test_view_directory_with_hidden_files(tmp_path):
     hidden_subdir.mkdir()
     (hidden_subdir / 'file.txt').write_text('content3')
 
+    # Create a subdirectory with a hidden file
+    visible_subdir = test_dir / 'visible_dir'
+    visible_subdir.mkdir()
+    (visible_subdir / '.hidden_in_subdir').write_text('content4')
+
     # View the directory
     result = editor(command='view', path=str(test_dir))
 
@@ -408,12 +413,14 @@ def test_view_directory_with_hidden_files(tmp_path):
     assert isinstance(result, CLIResult)
     assert str(test_dir) in result.output
     assert 'visible.txt' in result.output  # Visible file is shown
+    assert 'visible_dir' in result.output  # Visible directory is shown
     assert '.hidden1' not in result.output  # Hidden files not shown
     assert '.hidden2' not in result.output
     assert '.hidden_dir' not in result.output
+    assert '.hidden_in_subdir' not in result.output  # Hidden file in visible dir not shown
     assert (
         '3 hidden files/directories are excluded' in result.output
-    )  # Shows count of hidden items
+    )  # Shows count of hidden items in current dir only
     assert 'ls -la' in result.output  # Shows command to view hidden files
 
 

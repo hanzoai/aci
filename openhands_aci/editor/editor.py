@@ -174,17 +174,18 @@ class OHEditor:
                     'The `view_range` parameter is not allowed when `path` points to a directory.',
                 )
 
-            # First count hidden files/dirs
+            # First count hidden files/dirs in current directory only
             _, hidden_stdout, _ = run_shell_cmd(
-                rf"find -L {path} -maxdepth 2 -path '{path}/\.*' -not -path '{path}/\.' -not -path '{path}/\..'"
+                rf"find -L {path} -maxdepth 1 -path '{path}/\.*' -not -path '{path}/\.' -not -path '{path}/\..'"
             )
             hidden_count = (
                 len(hidden_stdout.strip().split('\n')) if hidden_stdout.strip() else 0
             )
 
-            # Then get non-hidden files/dirs
+            # Then get non-hidden files/dirs, excluding hidden files at all levels
+            # We need to exclude both files/dirs starting with . and files/dirs under hidden dirs
             _, stdout, stderr = run_shell_cmd(
-                rf"find -L {path} -maxdepth 2 -not -path '{path}/\.*'",
+                rf"find -L {path} -maxdepth 2 -not -path '*/\.*/*' -not -name '.*'",
                 truncate_notice=DIRECTORY_CONTENT_TRUNCATED_NOTICE,
             )
             if not stderr:
