@@ -47,7 +47,9 @@ def test_view_directory(editor):
     assert str(test_file.parent) in result.output
     assert test_file.name in result.output
     assert 'excluding hidden items' in result.output
-    assert '0 hidden files/directories are excluded' not in result.output  # No message when no hidden files
+    assert (
+        '0 hidden files/directories are excluded' not in result.output
+    )  # No message when no hidden files
 
 
 def test_create_file(editor):
@@ -409,7 +411,9 @@ def test_view_directory_with_hidden_files(tmp_path):
     assert '.hidden1' not in result.output  # Hidden files not shown
     assert '.hidden2' not in result.output
     assert '.hidden_dir' not in result.output
-    assert '3 hidden files/directories are excluded' in result.output  # Shows count of hidden items
+    assert (
+        '3 hidden files/directories are excluded' in result.output
+    )  # Shows count of hidden items
     assert 'ls -la' in result.output  # Shows command to view hidden files
 
 

@@ -178,7 +178,9 @@ class OHEditor:
             _, hidden_stdout, _ = run_shell_cmd(
                 rf"find -L {path} -maxdepth 2 -path '*/\.*' -not -path '*/\.' -not -path '*/\..'"
             )
-            hidden_count = len(hidden_stdout.strip().split('\n')) if hidden_stdout.strip() else 0
+            hidden_count = (
+                len(hidden_stdout.strip().split('\n')) if hidden_stdout.strip() else 0
+            )
 
             # Then get non-hidden files/dirs
             _, stdout, stderr = run_shell_cmd(
@@ -186,9 +188,13 @@ class OHEditor:
                 truncate_notice=DIRECTORY_CONTENT_TRUNCATED_NOTICE,
             )
             if not stderr:
-                msg = [f"Here's the files and directories up to 2 levels deep in {path}, excluding hidden items:\n{stdout}"]
+                msg = [
+                    f"Here's the files and directories up to 2 levels deep in {path}, excluding hidden items:\n{stdout}"
+                ]
                 if hidden_count > 0:
-                    msg.append(f"\n{hidden_count} hidden files/directories are excluded. You can use 'ls -la {path}' to see them.")
+                    msg.append(
+                        f"\n{hidden_count} hidden files/directories are excluded. You can use 'ls -la {path}' to see them."
+                    )
                 stdout = '\n'.join(msg)
             return CLIResult(
                 output=stdout,
