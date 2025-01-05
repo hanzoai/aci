@@ -417,7 +417,9 @@ def test_view_directory_with_hidden_files(tmp_path):
     assert '.hidden1' not in result.output  # Hidden files not shown
     assert '.hidden2' not in result.output
     assert '.hidden_dir' not in result.output
-    assert '.hidden_in_subdir' not in result.output  # Hidden file in visible dir not shown
+    assert (
+        '.hidden_in_subdir' not in result.output
+    )  # Hidden file in visible dir not shown
     assert (
         '3 hidden files/directories are excluded' in result.output
     )  # Shows count of hidden items in current dir only
