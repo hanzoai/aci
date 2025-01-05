@@ -175,8 +175,9 @@ class OHEditor:
                 )
 
             # First count hidden files/dirs in current directory only
+            # -mindepth 1 excludes . and .. automatically
             _, hidden_stdout, _ = run_shell_cmd(
-                rf"find -L {path} -maxdepth 1 -path '{path}/\.*' -not -path '{path}/\.' -not -path '{path}/\..'"
+                rf"find -L {path} -mindepth 1 -maxdepth 1 -name '.*'"
             )
             hidden_count = (
                 len(hidden_stdout.strip().split('\n')) if hidden_stdout.strip() else 0
