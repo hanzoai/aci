@@ -195,7 +195,7 @@ class OHEditor:
                 ]
                 if hidden_count > 0:
                     msg.append(
-                        f"\n{hidden_count} hidden files/directories are excluded. You can use 'ls -la {path}' to see them."
+                        f"\n{hidden_count} hidden files/directories in this directory are excluded. You can use 'ls -la {path}' to see them."
                     )
                 stdout = '\n'.join(msg)
             return CLIResult(
