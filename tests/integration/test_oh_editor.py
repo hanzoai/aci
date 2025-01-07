@@ -46,6 +46,10 @@ def test_view_directory(editor):
     assert isinstance(result, CLIResult)
     assert str(test_file.parent) in result.output
     assert test_file.name in result.output
+    assert 'excluding hidden items' in result.output
+    assert (
+        '0 hidden files/directories are excluded' not in result.output
+    )  # No message when no hidden files
 
 
 def test_create_file(editor):
@@ -380,6 +384,42 @@ def test_undo_edit_no_history_error(editor):
     empty_file.write_text('')
     with pytest.raises(ToolError):
         editor(command='undo_edit', path=str(empty_file))
+
+
+def test_view_directory_with_hidden_files(tmp_path):
+    editor = OHEditor()
+
+    # Create a directory with some test files
+    test_dir = tmp_path / 'test_dir'
+    test_dir.mkdir()
+    (test_dir / 'visible.txt').write_text('content1')
+    (test_dir / '.hidden1').write_text('hidden1')
+    (test_dir / '.hidden2').write_text('hidden2')
+
+    # Create a hidden subdirectory with a file
+    hidden_subdir = test_dir / '.hidden_dir'
+    hidden_subdir.mkdir()
+    (hidden_subdir / 'file.txt').write_text('content3')
+
+    # Create a visible subdirectory
+    visible_subdir = test_dir / 'visible_dir'
+    visible_subdir.mkdir()
+
+    # View the directory
+    result = editor(command='view', path=str(test_dir))
+
+    # Verify output
+    assert isinstance(result, CLIResult)
+    assert str(test_dir) in result.output
+    assert 'visible.txt' in result.output  # Visible file is shown
+    assert 'visible_dir' in result.output  # Visible directory is shown
+    assert '.hidden1' not in result.output  # Hidden files not shown
+    assert '.hidden2' not in result.output
+    assert '.hidden_dir' not in result.output
+    assert (
+        '3 hidden files/directories in this directory are excluded' in result.output
+    )  # Shows count of hidden items in current dir only
+    assert 'ls -la' in result.output  # Shows command to view hidden files
 
 
 def test_view_symlinked_directory(tmp_path):
