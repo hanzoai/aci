@@ -1,7 +1,8 @@
 import tempfile
-from collections import defaultdict
 from pathlib import Path
 from typing import Literal, get_args
+
+from .history import FileHistoryManager
 
 from openhands_aci.linter import DefaultLinter
 from openhands_aci.utils.shell import run_shell_cmd
@@ -41,8 +42,8 @@ class OHEditor:
     TOOL_NAME = 'oh_editor'
 
     def __init__(self):
-        self._file_history: dict[Path, list[str]] = defaultdict(list)
         self._linter = DefaultLinter()
+        self._history_manager = FileHistoryManager(max_history_per_file=10)
 
     def __call__(
         self,
@@ -65,7 +66,7 @@ class OHEditor:
             if file_text is None:
                 raise EditorToolParameterMissingError(command, 'file_text')
             self.write_file(_path, file_text)
-            self._file_history[_path].append(file_text)
+            self._history_manager.add_history(_path, file_text)
             return CLIResult(
                 path=str(_path),
                 new_content=file_text,
@@ -134,7 +135,7 @@ class OHEditor:
         self.write_file(path, new_file_content)
 
         # Save the content to history
-        self._file_history[path].append(file_content)
+        self._history_manager.add_history(path, file_content)
 
         # Create a snippet of the edited section
         replacement_line = file_content.split(old_str)[0].count('\n')
@@ -314,7 +315,7 @@ class OHEditor:
         snippet = '\n'.join(snippet_lines)
 
         self.write_file(path, new_file_text)
-        self._file_history[path].append(file_text)
+        self._history_manager.add_history(path, file_text)
 
         success_message = f'The file {path} has been edited. '
         success_message += self._make_output(
@@ -373,11 +374,11 @@ class OHEditor:
         """
         Implement the undo_edit command.
         """
-        if not self._file_history[path]:
-            raise ToolError(f'No edit history found for {path}.')
-
         current_text = self.read_file(path).expandtabs()
-        old_text = self._file_history[path].pop()
+        old_text = self._history_manager.get_last_history(path)
+        if old_text is None:
+            raise ToolError(f'No edit history found for {path}.')
+            
         self.write_file(path, old_text)
 
         return CLIResult(

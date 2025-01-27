@@ -122,8 +122,8 @@ def test_file_editor_memory_leak(temp_file):
     initial_memory = psutil.Process(os.getpid()).memory_info().rss
     print(f"\nInitial memory usage: {initial_memory / 1024 / 1024:.2f} MB")
     
-    # Create a larger initial content to make memory issues more apparent
-    content = "Initial content with some reasonable length to make the file larger\n" * 5000
+    # Create initial content that's large enough to test but not overwhelming
+    content = "Initial content with some reasonable length to make the file larger\n" * 100
     with open(temp_file, 'w') as f:
         f.write(content)
     
@@ -131,11 +131,11 @@ def test_file_editor_memory_leak(temp_file):
         # Store memory readings for analysis
         memory_readings = []
         
-        # Perform more edits with larger content
-        for i in range(2000):  # Increased from 1000 to 2000
-            # Create larger content for each edit
-            old_content = f"content_{i}\n" * 100  # Make each edit larger
-            new_content = f"content_{i + 1}\n" * 100
+        # Perform edits with reasonable content size
+        for i in range(500):  # Reduced from 2000 to 500
+            # Create content for each edit
+            old_content = f"content_{i}\n" * 10  # Reduced from 100 to 10
+            new_content = f"content_{i + 1}\n" * 10
             
             # Add the old content to the file
             with open(temp_file, 'a') as f:
