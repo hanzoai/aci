@@ -1,8 +1,7 @@
+import shutil
 import tempfile
 from pathlib import Path
-from typing import Literal, get_args
-
-from .history import FileHistoryManager
+from typing import Literal, Optional, get_args
 
 from openhands_aci.linter import DefaultLinter
 from openhands_aci.utils.shell import run_shell_cmd
@@ -13,6 +12,7 @@ from .exceptions import (
     EditorToolParameterMissingError,
     ToolError,
 )
+from .history import FileHistoryManager
 from .prompts import DIRECTORY_CONTENT_TRUNCATED_NOTICE, FILE_CONTENT_TRUNCATED_NOTICE
 from .results import CLIResult, maybe_truncate
 
@@ -110,19 +110,19 @@ class OHEditor:
         current_chunk = []
         chunk_start_line = 1
         chunk_lines = 0
-        
+
         with open(path, 'r') as f:
             for i, line in enumerate(f, 1):
                 line = line.expandtabs()
                 current_chunk.append(line)
                 chunk_lines += 1
-                
+
                 # When we have enough lines to potentially match old_str
                 if chunk_lines >= old_str.count('\n') + 1:
                     chunk_text = ''.join(current_chunk)
                     if old_str in chunk_text:
                         occurrences.append((chunk_start_line, chunk_text))
-                    
+
                     # Move window forward
                     current_chunk.pop(0)
                     chunk_start_line += 1
@@ -140,7 +140,7 @@ class OHEditor:
 
         # We found exactly one occurrence
         replacement_line, file_content = occurrences[0]
-        
+
         # Replace old_str with new_str
         new_file_content = file_content.replace(old_str, new_str)
 
@@ -153,7 +153,7 @@ class OHEditor:
         # Create a snippet of the edited section
         start_line = max(0, replacement_line - SNIPPET_CONTEXT_WINDOW)
         end_line = replacement_line + SNIPPET_CONTEXT_WINDOW + new_str.count('\n')
-        
+
         # Read just the snippet range
         snippet = self.read_file(path, start_line=start_line, end_line=end_line)
 
@@ -231,7 +231,7 @@ class OHEditor:
 
         # Get number of lines in file
         num_lines = sum(1 for _ in open(path))
-        
+
         start_line = 1
         if not view_range:
             file_content = self.read_file(path)
@@ -336,7 +336,10 @@ class OHEditor:
 
         # Read just the snippet range
         start_line = max(1, insert_line - SNIPPET_CONTEXT_WINDOW)
-        end_line = min(num_lines + len(new_str_lines), insert_line + SNIPPET_CONTEXT_WINDOW + len(new_str_lines))
+        end_line = min(
+            num_lines + len(new_str_lines),
+            insert_line + SNIPPET_CONTEXT_WINDOW + len(new_str_lines),
+        )
         snippet = self.read_file(path, start_line=start_line, end_line=end_line)
 
         # Save history
@@ -406,7 +409,7 @@ class OHEditor:
         old_text = self._history_manager.get_last_history(path)
         if old_text is None:
             raise ToolError(f'No edit history found for {path}.')
-            
+
         self.write_file(path, old_text)
 
         return CLIResult(
@@ -417,10 +420,15 @@ class OHEditor:
             new_content=old_text,
         )
 
-    def read_file(self, path: Path, start_line: int = None, end_line: int = None) -> str:
+    def read_file(
+        self,
+        path: Path,
+        start_line: Optional[int] = None,
+        end_line: Optional[int] = None,
+    ) -> str:
         """
         Read the content of a file from a given path; raise a ToolError if an error occurs.
-        
+
         Args:
             path: Path to the file to read
             start_line: Optional start line number (1-based). If provided with end_line, only reads that range.
@@ -438,7 +446,9 @@ class OHEditor:
                             lines.append(line)
                 return ''.join(lines)
             elif start_line is not None or end_line is not None:
-                raise ValueError("Both start_line and end_line must be provided together")
+                raise ValueError(
+                    'Both start_line and end_line must be provided together'
+                )
             else:
                 # For small files or when range not specified, read entire file
                 return path.read_text()
