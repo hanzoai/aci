@@ -105,28 +105,34 @@ class OHEditor:
         old_str = old_str.expandtabs()
         new_str = new_str.expandtabs() if new_str is not None else ''
 
-        # Find occurrences by reading line by line
+        # Read the file line by line and build chunks that match the size of old_str
         occurrences = []
-        current_chunk = []
-        chunk_start_line = 1
-        chunk_lines = 0
-
+        lines = []
+        old_str_lines = old_str.split('\n')
+        old_str_line_count = len(old_str_lines)
+        
         with open(path, 'r') as f:
-            for i, line in enumerate(f, 1):
-                line = line.expandtabs()
-                current_chunk.append(line)
-                chunk_lines += 1
-
-                # When we have enough lines to potentially match old_str
-                if chunk_lines >= old_str.count('\n') + 1:
-                    chunk_text = ''.join(current_chunk)
-                    if old_str in chunk_text:
-                        occurrences.append((chunk_start_line, chunk_text))
-
-                    # Move window forward
-                    current_chunk.pop(0)
-                    chunk_start_line += 1
-                    chunk_lines -= 1
+            # Read initial chunk
+            for _ in range(old_str_line_count):
+                line = f.readline()
+                if not line:
+                    break
+                lines.append(line.expandtabs())
+            
+            # Check first chunk
+            if len(lines) == old_str_line_count:
+                chunk_text = ''.join(lines)
+                if chunk_text == old_str:
+                    occurrences.append((1, chunk_text))
+            
+            # Process rest of file
+            line_num = old_str_line_count + 1
+            for line in f:
+                lines.pop(0)
+                lines.append(line.expandtabs())
+                chunk_text = ''.join(lines)
+                if chunk_text == old_str:
+                    occurrences.append((line_num - old_str_line_count + 1, chunk_text))
 
         if not occurrences:
             raise ToolError(
