@@ -105,50 +105,40 @@ class OHEditor:
         old_str = old_str.expandtabs()
         new_str = new_str.expandtabs() if new_str is not None else ''
 
-        # Read the file line by line and build chunks that match the size of old_str
+        # Read the entire file first to handle both single-line and multi-line replacements
+        file_content = self.read_file(path).expandtabs()
+
+        # Find all occurrences
         occurrences = []
-        lines = []
-        old_str_lines = old_str.split('\n')
-        old_str_line_count = len(old_str_lines)
-        
-        with open(path, 'r') as f:
-            # Read initial chunk
-            for _ in range(old_str_line_count):
-                line = f.readline()
-                if not line:
-                    break
-                lines.append(line.expandtabs())
-            
-            # Check first chunk
-            if len(lines) == old_str_line_count:
-                chunk_text = ''.join(lines)
-                if chunk_text == old_str:
-                    occurrences.append((1, chunk_text))
-            
-            # Process rest of file
-            line_num = old_str_line_count + 1
-            for line in f:
-                lines.pop(0)
-                lines.append(line.expandtabs())
-                chunk_text = ''.join(lines)
-                if chunk_text == old_str:
-                    occurrences.append((line_num - old_str_line_count + 1, chunk_text))
+        start_idx = 0
+        while True:
+            idx = file_content.find(old_str, start_idx)
+            if idx == -1:
+                break
+            # Count newlines before this occurrence to get the line number
+            line_num = file_content.count('\n', 0, idx) + 1
+            # Store the actual matched text to preserve line endings
+            matched_text = file_content[idx:idx + len(old_str)]
+            occurrences.append((line_num, matched_text, idx))
+            start_idx = idx + len(old_str)
 
         if not occurrences:
             raise ToolError(
                 f'No replacement was performed, old_str `{old_str}` did not appear verbatim in {path}.'
             )
         if len(occurrences) > 1:
-            line_numbers = [line for line, _ in occurrences]
+            line_numbers = [line for line, _, _ in occurrences]
             raise ToolError(
                 f'No replacement was performed. Multiple occurrences of old_str `{old_str}` in lines {line_numbers}. Please ensure it is unique.'
             )
 
         # We found exactly one occurrence
-        replacement_line, file_content = occurrences[0]
+        replacement_line, matched_text, idx = occurrences[0]
 
-        # Replace old_str with new_str
-        new_file_content = file_content.replace(old_str, new_str)
+        # Create new content by replacing just the matched text
+        new_file_content = (
+            file_content[:idx] + new_str + file_content[idx + len(matched_text):]
+        )
 
         # Write the new content to the file
         self.write_file(path, new_file_content)

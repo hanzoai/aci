@@ -148,10 +148,20 @@ def test_file_read_memory_usage(temp_file):
         f'Memory growth too high: {memory_growth / 1024 / 1024:.2f} MB'
     )
 
+    # Parse the JSON output
+    import json
+    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
+    content = result_json['formatted_output_and_error']
+
+    # Extract the actual content (skip the header)
+    content_start = content.find('Here\'s the result of running `cat -n`')
+    content_start = content.find('\n', content_start) + 1
+    content = content[content_start:]
+
     # Verify we got the correct lines
-    assert result.output.count('\n') >= 99, 'Should have read at least 99 lines'
-    assert 'Line 5000:' in result.output, 'Should contain the first requested line'
-    assert 'Line 5099:' in result.output, 'Should contain the last requested line'
+    assert content.count('\n') >= 99, 'Should have read at least 99 lines'
+    assert 'Line 5000:' in content, 'Should contain the first requested line'
+    assert 'Line 5099:' in content, 'Should contain the last requested line'
 
 
 def test_file_editor_memory_leak(temp_file):
