@@ -102,32 +102,45 @@ class OHEditor:
         """
         Implement the str_replace command, which replaces old_str with new_str in the file content.
         """
-        file_content = self.read_file(path).expandtabs()
         old_str = old_str.expandtabs()
         new_str = new_str.expandtabs() if new_str is not None else ''
 
-        # Check if old_str is unique in the file
-        occurrences = file_content.count(old_str)
-        if occurrences == 0:
+        # Find occurrences by reading line by line
+        occurrences = []
+        current_chunk = []
+        chunk_start_line = 1
+        chunk_lines = 0
+        
+        with open(path, 'r') as f:
+            for i, line in enumerate(f, 1):
+                line = line.expandtabs()
+                current_chunk.append(line)
+                chunk_lines += 1
+                
+                # When we have enough lines to potentially match old_str
+                if chunk_lines >= old_str.count('\n') + 1:
+                    chunk_text = ''.join(current_chunk)
+                    if old_str in chunk_text:
+                        occurrences.append((chunk_start_line, chunk_text))
+                    
+                    # Move window forward
+                    current_chunk.pop(0)
+                    chunk_start_line += 1
+                    chunk_lines -= 1
+
+        if not occurrences:
             raise ToolError(
                 f'No replacement was performed, old_str `{old_str}` did not appear verbatim in {path}.'
             )
-        if occurrences > 1:
-            # Find starting line numbers for each occurrence
-            line_numbers = []
-            start_idx = 0
-            while True:
-                idx = file_content.find(old_str, start_idx)
-                if idx == -1:
-                    break
-                # Count newlines before this occurrence to get the line number
-                line_num = file_content.count('\n', 0, idx) + 1
-                line_numbers.append(line_num)
-                start_idx = idx + 1
+        if len(occurrences) > 1:
+            line_numbers = [line for line, _ in occurrences]
             raise ToolError(
                 f'No replacement was performed. Multiple occurrences of old_str `{old_str}` in lines {line_numbers}. Please ensure it is unique.'
             )
 
+        # We found exactly one occurrence
+        replacement_line, file_content = occurrences[0]
+        
         # Replace old_str with new_str
         new_file_content = file_content.replace(old_str, new_str)
 
@@ -138,10 +151,11 @@ class OHEditor:
         self._history_manager.add_history(path, file_content)
 
         # Create a snippet of the edited section
-        replacement_line = file_content.split(old_str)[0].count('\n')
         start_line = max(0, replacement_line - SNIPPET_CONTEXT_WINDOW)
         end_line = replacement_line + SNIPPET_CONTEXT_WINDOW + new_str.count('\n')
-        snippet = '\n'.join(new_file_content.split('\n')[start_line : end_line + 1])
+        
+        # Read just the snippet range
+        snippet = self.read_file(path, start_line=start_line, end_line=end_line)
 
         # Prepare the success message
         success_message = f'The file {path} has been edited. '
@@ -215,9 +229,12 @@ class OHEditor:
                 prev_exist=True,
             )
 
-        file_content = self.read_file(path)
+        # Get number of lines in file
+        num_lines = sum(1 for _ in open(path))
+        
         start_line = 1
         if not view_range:
+            file_content = self.read_file(path)
             return CLIResult(
                 output=self._make_output(file_content, str(path), start_line),
                 path=str(path),
@@ -231,8 +248,6 @@ class OHEditor:
                 'It should be a list of two integers.',
             )
 
-        file_content_lines = file_content.split('\n')
-        num_lines = len(file_content_lines)
         start_line, end_line = view_range
         if start_line < 1 or start_line > num_lines:
             raise EditorToolParameterInvalidError(
@@ -256,9 +271,9 @@ class OHEditor:
             )
 
         if end_line == -1:
-            file_content = '\n'.join(file_content_lines[start_line - 1 :])
-        else:
-            file_content = '\n'.join(file_content_lines[start_line - 1 : end_line])
+            end_line = num_lines
+
+        file_content = self.read_file(path, start_line=start_line, end_line=end_line)
         return CLIResult(
             path=str(path),
             output=self._make_output(file_content, str(path), start_line),
@@ -280,16 +295,8 @@ class OHEditor:
         """
         Implement the insert command, which inserts new_str at the specified line in the file content.
         """
-        try:
-            file_text = self.read_file(path)
-        except Exception as e:
-            raise ToolError(f'Ran into {e} while trying to read {path}') from None
-
-        file_text = file_text.expandtabs()
-        new_str = new_str.expandtabs()
-
-        file_text_lines = file_text.split('\n')
-        num_lines = len(file_text_lines)
+        # Count lines in file
+        num_lines = sum(1 for _ in open(path))
 
         if insert_line < 0 or insert_line > num_lines:
             raise EditorToolParameterInvalidError(
@@ -298,24 +305,45 @@ class OHEditor:
                 f'It should be within the range of lines of the file: {[0, num_lines]}',
             )
 
+        new_str = new_str.expandtabs()
         new_str_lines = new_str.split('\n')
-        new_file_text_lines = (
-            file_text_lines[:insert_line]
-            + new_str_lines
-            + file_text_lines[insert_line:]
-        )
-        snippet_lines = (
-            file_text_lines[max(0, insert_line - SNIPPET_CONTEXT_WINDOW) : insert_line]
-            + new_str_lines
-            + file_text_lines[
-                insert_line : min(num_lines, insert_line + SNIPPET_CONTEXT_WINDOW)
-            ]
-        )
-        new_file_text = '\n'.join(new_file_text_lines)
-        snippet = '\n'.join(snippet_lines)
 
-        self.write_file(path, new_file_text)
+        # Create temporary file for the new content
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
+            # Copy lines before insert point
+            with open(path, 'r') as f:
+                for i, line in enumerate(f, 1):
+                    if i > insert_line:
+                        break
+                    temp_file.write(line.expandtabs())
+
+            # Insert new content
+            for line in new_str_lines:
+                temp_file.write(line + '\n')
+
+            # Copy remaining lines
+            with open(path, 'r') as f:
+                for i, line in enumerate(f, 1):
+                    if i <= insert_line:
+                        continue
+                    temp_file.write(line.expandtabs())
+
+        # Read the original content for history
+        file_text = self.read_file(path)
+
+        # Move temporary file to original location
+        shutil.move(temp_file.name, path)
+
+        # Read just the snippet range
+        start_line = max(1, insert_line - SNIPPET_CONTEXT_WINDOW)
+        end_line = min(num_lines + len(new_str_lines), insert_line + SNIPPET_CONTEXT_WINDOW + len(new_str_lines))
+        snippet = self.read_file(path, start_line=start_line, end_line=end_line)
+
+        # Save history
         self._history_manager.add_history(path, file_text)
+
+        # Read new content for result
+        new_file_text = self.read_file(path)
 
         success_message = f'The file {path} has been edited. '
         success_message += self._make_output(
@@ -389,12 +417,31 @@ class OHEditor:
             new_content=old_text,
         )
 
-    def read_file(self, path: Path) -> str:
+    def read_file(self, path: Path, start_line: int = None, end_line: int = None) -> str:
         """
         Read the content of a file from a given path; raise a ToolError if an error occurs.
+        
+        Args:
+            path: Path to the file to read
+            start_line: Optional start line number (1-based). If provided with end_line, only reads that range.
+            end_line: Optional end line number (1-based). Must be provided with start_line.
         """
         try:
-            return path.read_text()
+            if start_line is not None and end_line is not None:
+                # Read only the specified line range
+                lines = []
+                with open(path, 'r') as f:
+                    for i, line in enumerate(f, 1):
+                        if i > end_line:
+                            break
+                        if i >= start_line:
+                            lines.append(line)
+                return ''.join(lines)
+            elif start_line is not None or end_line is not None:
+                raise ValueError("Both start_line and end_line must be provided together")
+            else:
+                # For small files or when range not specified, read entire file
+                return path.read_text()
         except Exception as e:
             raise ToolError(f'Ran into {e} while trying to read {path}') from None
 
