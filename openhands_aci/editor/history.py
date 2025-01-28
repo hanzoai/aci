@@ -30,8 +30,9 @@ class FileHistoryManager:
             self.history_dir = history_dir
             self.history_dir.mkdir(parents=True, exist_ok=True)
 
-        # In-memory cache of recent histories
+        # In-memory cache of recent histories with access order
         self._cache: dict[Path, deque[str]] = {}
+        self._cache_order: list[Path] = []  # Track access order
         self.MAX_CACHE_ENTRIES = 5
 
     def __del__(self):
@@ -59,9 +60,17 @@ class FileHistoryManager:
                 history = deque(history_list, maxlen=self.max_history_per_file)
 
             # Update cache
-            if len(self._cache) >= self.MAX_CACHE_ENTRIES:
-                # Remove oldest entry
-                self._cache.pop(next(iter(self._cache)))
+            if history_path in self._cache:
+                # Move to end (most recently used)
+                self._cache_order.remove(history_path)
+                self._cache_order.append(history_path)
+            else:
+                # Add new entry
+                if len(self._cache) >= self.MAX_CACHE_ENTRIES:
+                    # Remove least recently used entry
+                    oldest_path = self._cache_order.pop(0)
+                    del self._cache[oldest_path]
+                self._cache_order.append(history_path)
             self._cache[history_path] = history
 
             return history
@@ -100,6 +109,7 @@ class FileHistoryManager:
         history_path = self._get_history_path(file_path)
         if history_path in self._cache:
             del self._cache[history_path]
+            self._cache_order.remove(history_path)
         try:
             os.remove(history_path)
         except FileNotFoundError:
