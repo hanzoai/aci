@@ -7,17 +7,6 @@ agent: CodeActAgent
 This repository contains the Agent-Computer Interface (ACI) for OpenHands, providing essential tools and interfaces for AI agents to interact with computer systems for software development tasks. The core functionality is implemented in Python and includes code editing, linting, and utility functions.
 
 ## General Setup:
-To set up the repository for development:
-
-1. Install dependencies using Poetry:
-```bash
-poetry install
-```
-
-2. Install pre-commit hooks:
-```bash
-make install-pre-commit-hooks
-```
 
 Before pushing any changes, ensure all checks pass:
 * Run pre-commit hooks: `pre-commit run --files openhands_aci/**/* tests/**/* --config ./dev_config/python/.pre-commit-config.yaml`
