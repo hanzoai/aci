@@ -446,8 +446,9 @@ class OHEditor:
                     'Both start_line and end_line must be provided together'
                 )
             else:
-                # For small files or when range not specified, read entire file
-                return path.read_text()
+                # Use line-by-line reading to avoid loading entire file into memory
+                with open(path, 'r') as f:
+                    return ''.join(f)
         except Exception as e:
             raise ToolError(f'Ran into {e} while trying to read {path}') from None
 

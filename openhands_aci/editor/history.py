@@ -1,7 +1,6 @@
 """History management for file edits with disk-based storage and memory constraints."""
 
 import tempfile
-from collections import deque
 from pathlib import Path
 from typing import Optional
 
@@ -28,21 +27,51 @@ class FileHistoryManager:
     def add_history(self, file_path: Path, content: str):
         """Add a new history entry for a file."""
         key = str(file_path)
-        history = self.cache.get(key, deque(maxlen=self.max_history_per_file))
-        history.append(content)
-        self.cache.set(key, history)
-        print(f'History saved for {file_path}. Current history size: {len(history)}')
+        # Get list of entry indices for this file
+        entries_key = f'{key}:entries'
+        entries = self.cache.get(entries_key, [])
+
+        # Add new entry
+        entry_key = f'{key}:{len(entries)}'
+        self.cache.set(entry_key, content)
+        entries.append(entry_key)
+
+        # Keep only last N entries
+        if len(entries) > self.max_history_per_file:
+            old_key = entries.pop(0)
+            self.cache.delete(old_key)
+
+        # Update entries list
+        self.cache.set(entries_key, entries)
+        print(f'History saved for {file_path}. Current history size: {len(entries)}')
 
     def get_last_history(self, file_path: Path) -> Optional[str]:
         """Get the most recent history entry for a file."""
         key = str(file_path)
-        history = self.cache.get(key, deque())
-        if not history:
+        entries_key = f'{key}:entries'
+        entries = self.cache.get(entries_key, [])
+
+        if not entries:
             return None
-        content = history.pop()
-        self.cache.set(key, history)
+
+        # Get and remove last entry
+        last_key = entries.pop()
+        content = self.cache.get(last_key)
+        self.cache.delete(last_key)
+
+        # Update entries list
+        self.cache.set(entries_key, entries)
         return content
 
     def clear_history(self, file_path: Path):
         """Clear history for a given file."""
-        self.cache.delete(str(file_path))
+        key = str(file_path)
+        entries_key = f'{key}:entries'
+        entries = self.cache.get(entries_key, [])
+
+        # Delete all entries
+        for entry_key in entries:
+            self.cache.delete(entry_key)
+
+        # Delete entries list
+        self.cache.delete(entries_key)
