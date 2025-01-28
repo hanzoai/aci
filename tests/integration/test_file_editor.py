@@ -150,11 +150,12 @@ def test_file_read_memory_usage(temp_file):
 
     # Parse the JSON output
     import json
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
+
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
     content = result_json['formatted_output_and_error']
 
     # Extract the actual content (skip the header)
-    content_start = content.find('Here\'s the result of running `cat -n`')
+    content_start = content.find("Here's the result of running `cat -n`")
     content_start = content.find('\n', content_start) + 1
     content = content[content_start:]
 

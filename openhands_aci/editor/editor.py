@@ -118,7 +118,7 @@ class OHEditor:
             # Count newlines before this occurrence to get the line number
             line_num = file_content.count('\n', 0, idx) + 1
             # Store the actual matched text to preserve line endings
-            matched_text = file_content[idx:idx + len(old_str)]
+            matched_text = file_content[idx : idx + len(old_str)]
             occurrences.append((line_num, matched_text, idx))
             start_idx = idx + len(old_str)
 
@@ -137,7 +137,7 @@ class OHEditor:
 
         # Create new content by replacing just the matched text
         new_file_content = (
-            file_content[:idx] + new_str + file_content[idx + len(matched_text):]
+            file_content[:idx] + new_str + file_content[idx + len(matched_text) :]
         )
 
         # Write the new content to the file
