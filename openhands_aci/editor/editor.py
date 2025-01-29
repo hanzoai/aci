@@ -1,3 +1,5 @@
+import mimetypes
+import os
 import shutil
 import tempfile
 from pathlib import Path
@@ -10,6 +12,7 @@ from .config import SNIPPET_CONTEXT_WINDOW
 from .exceptions import (
     EditorToolParameterInvalidError,
     EditorToolParameterMissingError,
+    FileValidationError,
     ToolError,
 )
 from .history import FileHistoryManager
@@ -280,6 +283,8 @@ class OHEditor:
         """
         Write the content of a file to a given path; raise a ToolError if an error occurs.
         """
+        # For writes, we validate with for_edit=True
+        self.validate_file(path, for_edit=True)
         try:
             path.write_text(file_text)
         except Exception as e:
@@ -416,6 +421,52 @@ class OHEditor:
             new_content=old_text,
         )
 
+    def validate_file(self, path: Path, for_edit: bool = False) -> None:
+        """
+        Validate a file for reading or editing operations.
+        
+        Args:
+            path: Path to the file to validate
+            for_edit: If True, applies stricter validation rules for editing operations
+        
+        Raises:
+            FileValidationError: If the file fails validation
+        """
+        if not path.is_file():
+            return  # Skip validation for directories
+
+        # Check file size (10MB limit)
+        file_size = os.path.getsize(path)
+        max_size = 10 * 1024 * 1024  # 10MB in bytes
+        if file_size > max_size:
+            raise FileValidationError(
+                path=str(path),
+                reason=f'File is too large ({file_size / 1024 / 1024:.1f}MB). Maximum allowed size is 10MB.'
+            )
+
+        # Check if file is binary
+        mime_type, _ = mimetypes.guess_type(str(path))
+        if mime_type is None:
+            # If mime_type is None, try to detect if it's binary by reading first chunk
+            try:
+                chunk = open(path, 'rb').read(1024)
+                if b'\0' in chunk:  # Common way to detect binary files
+                    raise FileValidationError(
+                        path=str(path),
+                        reason='File appears to be binary. Only text files can be edited.'
+                    )
+            except Exception as e:
+                raise FileValidationError(
+                    path=str(path),
+                    reason=f'Error checking file type: {str(e)}'
+                )
+        elif not mime_type.startswith('text/'):
+            # Known non-text mime type
+            raise FileValidationError(
+                path=str(path),
+                reason=f'File type {mime_type} is not supported. Only text files can be edited.'
+            )
+
     def read_file(
         self,
         path: Path,
@@ -430,6 +481,8 @@ class OHEditor:
             start_line: Optional start line number (1-based). If provided with end_line, only reads that range.
             end_line: Optional end line number (1-based). Must be provided with start_line.
         """
+        # For reads, we validate with for_edit=False
+        self.validate_file(path, for_edit=False)
         try:
             if start_line is not None and end_line is not None:
                 # Read only the specified line range

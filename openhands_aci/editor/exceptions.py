@@ -3,6 +3,10 @@ class ToolError(Exception):
 
     def __init__(self, message):
         self.message = message
+        super().__init__(message)
+
+    def __str__(self):
+        return self.message
 
 
 class EditorToolParameterMissingError(ToolError):
@@ -25,3 +29,13 @@ class EditorToolParameterInvalidError(ToolError):
             if hint
             else f'Invalid `{parameter}` parameter: {value}.'
         )
+
+
+class FileValidationError(ToolError):
+    """Raised when a file fails validation checks (size, type, etc.)."""
+
+    def __init__(self, path: str, reason: str):
+        self.path = path
+        self.reason = reason
+        self.message = f'File validation failed for {path}: {reason}'
+        super().__init__(self.message)
