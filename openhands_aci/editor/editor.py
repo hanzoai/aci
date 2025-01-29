@@ -424,11 +424,11 @@ class OHEditor:
     def validate_file(self, path: Path, for_edit: bool = False) -> None:
         """
         Validate a file for reading or editing operations.
-        
+
         Args:
             path: Path to the file to validate
             for_edit: If True, applies stricter validation rules for editing operations
-        
+
         Raises:
             FileValidationError: If the file fails validation
         """
@@ -441,7 +441,7 @@ class OHEditor:
         if file_size > max_size:
             raise FileValidationError(
                 path=str(path),
-                reason=f'File is too large ({file_size / 1024 / 1024:.1f}MB). Maximum allowed size is 10MB.'
+                reason=f'File is too large ({file_size / 1024 / 1024:.1f}MB). Maximum allowed size is 10MB.',
             )
 
         # Check if file is binary
@@ -453,18 +453,17 @@ class OHEditor:
                 if b'\0' in chunk:  # Common way to detect binary files
                     raise FileValidationError(
                         path=str(path),
-                        reason='File appears to be binary. Only text files can be edited.'
+                        reason='File appears to be binary. Only text files can be edited.',
                     )
             except Exception as e:
                 raise FileValidationError(
-                    path=str(path),
-                    reason=f'Error checking file type: {str(e)}'
+                    path=str(path), reason=f'Error checking file type: {str(e)}'
                 )
         elif not mime_type.startswith('text/'):
             # Known non-text mime type
             raise FileValidationError(
                 path=str(path),
-                reason=f'File type {mime_type} is not supported. Only text files can be edited.'
+                reason=f'File type {mime_type} is not supported. Only text files can be edited.',
             )
 
     def read_file(
