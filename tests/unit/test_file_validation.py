@@ -17,7 +17,7 @@ def test_validate_large_file(tmp_path):
         f.write(b'0' * file_size)
 
     with pytest.raises(FileValidationError) as exc_info:
-        editor.validate_file(large_file, for_edit=True)
+        editor.validate_file(large_file)
     assert 'File is too large' in str(exc_info.value)
     assert '10.0MB' in str(exc_info.value)
 
@@ -32,7 +32,7 @@ def test_validate_binary_file(tmp_path):
         f.write(b'Some text\x00with binary\x00content')
 
     with pytest.raises(FileValidationError) as exc_info:
-        editor.validate_file(binary_file, for_edit=True)
+        editor.validate_file(binary_file)
     assert 'binary' in str(exc_info.value).lower()
 
 
@@ -46,14 +46,14 @@ def test_validate_text_file(tmp_path):
         f.write('This is a valid text file\nwith multiple lines\n')
 
     # Should not raise any exception
-    editor.validate_file(text_file, for_edit=True)
+    editor.validate_file(text_file)
 
 
 def test_validate_directory():
     """Test that directories are skipped in validation."""
     editor = OHEditor()
     # Should not raise any exception for directories
-    editor.validate_file(Path('/tmp'), for_edit=True)
+    editor.validate_file(Path('/tmp'))
 
 
 def test_validate_nonexistent_file():
@@ -61,4 +61,4 @@ def test_validate_nonexistent_file():
     editor = OHEditor()
     nonexistent = Path('/nonexistent/file.txt')
     # Should not raise FileValidationError since validate_path will handle this case
-    editor.validate_file(nonexistent, for_edit=True)
+    editor.validate_file(nonexistent)

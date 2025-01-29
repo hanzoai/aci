@@ -283,8 +283,7 @@ class OHEditor:
         """
         Write the content of a file to a given path; raise a ToolError if an error occurs.
         """
-        # For writes, we validate with for_edit=True
-        self.validate_file(path, for_edit=True)
+        self.validate_file(path)
         try:
             path.write_text(file_text)
         except Exception as e:
@@ -421,13 +420,12 @@ class OHEditor:
             new_content=old_text,
         )
 
-    def validate_file(self, path: Path, for_edit: bool = False) -> None:
+    def validate_file(self, path: Path) -> None:
         """
         Validate a file for reading or editing operations.
 
         Args:
             path: Path to the file to validate
-            for_edit: If True, applies stricter validation rules for editing operations
 
         Raises:
             FileValidationError: If the file fails validation
@@ -480,8 +478,7 @@ class OHEditor:
             start_line: Optional start line number (1-based). If provided with end_line, only reads that range.
             end_line: Optional end line number (1-based). Must be provided with start_line.
         """
-        # For reads, we validate with for_edit=False
-        self.validate_file(path, for_edit=False)
+        self.validate_file(path)
         try:
             if start_line is not None and end_line is not None:
                 # Read only the specified line range
