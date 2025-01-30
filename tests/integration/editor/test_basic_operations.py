@@ -1,4 +1,5 @@
 """Tests for basic file editor operations."""
+
 from openhands_aci.editor import file_editor
 
 from .conftest import parse_result
@@ -18,7 +19,10 @@ def test_successful_operations(temp_file):
         enable_linting=False,
     )
     result_json = parse_result(result)
-    assert "Here's the result of running `cat -n`" in result_json['formatted_output_and_error']
+    assert (
+        "Here's the result of running `cat -n`"
+        in result_json['formatted_output_and_error']
+    )
     assert 'line 1' in result_json['formatted_output_and_error']
 
     # Test str_replace

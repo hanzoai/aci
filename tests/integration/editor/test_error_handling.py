@@ -1,4 +1,5 @@
 """Tests for error handling in file editor."""
+
 from openhands_aci.editor import file_editor
 
 from .conftest import parse_result
@@ -13,7 +14,10 @@ def test_validation_error_formatting():
     )
     result_json = parse_result(result)
     assert 'does not exist' in result_json['formatted_output_and_error']
-    assert result_json['error'] == 'Invalid `path` parameter: /nonexistent/file.txt. The path /nonexistent/file.txt does not exist. Please provide a valid path.'
+    assert (
+        result_json['error']
+        == 'Invalid `path` parameter: /nonexistent/file.txt. The path /nonexistent/file.txt does not exist. Please provide a valid path.'
+    )
 
     # Test directory validation for non-view commands
     result = file_editor(
@@ -78,7 +82,9 @@ def test_view_range_validation(temp_file):
         enable_linting=False,
     )
     result_json = parse_result(result)
-    assert 'should be a list of two integers' in result_json['formatted_output_and_error']
+    assert (
+        'should be a list of two integers' in result_json['formatted_output_and_error']
+    )
 
     # Test out of bounds range
     result = file_editor(
@@ -88,7 +94,10 @@ def test_view_range_validation(temp_file):
         enable_linting=False,
     )
     result_json = parse_result(result)
-    assert 'should be smaller than the number of lines' in result_json['formatted_output_and_error']
+    assert (
+        'should be smaller than the number of lines'
+        in result_json['formatted_output_and_error']
+    )
 
     # Test invalid range order
     result = file_editor(
@@ -98,7 +107,10 @@ def test_view_range_validation(temp_file):
         enable_linting=False,
     )
     result_json = parse_result(result)
-    assert 'should be greater than or equal to' in result_json['formatted_output_and_error']
+    assert (
+        'should be greater than or equal to'
+        in result_json['formatted_output_and_error']
+    )
 
 
 def test_insert_validation(temp_file):
