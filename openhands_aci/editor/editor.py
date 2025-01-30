@@ -100,12 +100,20 @@ class OHEditor:
             f'Unrecognized command {command}. The allowed commands for the {self.TOOL_NAME} tool are: {", ".join(get_args(Command))}'
         )
 
+    def _count_lines(self, path: Path) -> int:
+        """
+        Count the number of lines in a file safely.
+        """
+        with open(path) as f:
+            return sum(1 for _ in f)
+
     def str_replace(
         self, path: Path, old_str: str, new_str: str | None, enable_linting: bool
     ) -> CLIResult:
         """
         Implement the str_replace command, which replaces old_str with new_str in the file content.
         """
+        self.validate_file(path)
         old_str = old_str.expandtabs()
         new_str = new_str.expandtabs() if new_str is not None else ''
 
@@ -227,8 +235,9 @@ class OHEditor:
                 prev_exist=True,
             )
 
-        # Get number of lines in file
-        num_lines = sum(1 for _ in open(path))
+        # Validate file and count lines
+        self.validate_file(path)
+        num_lines = self._count_lines(path)
 
         start_line = 1
         if not view_range:
@@ -294,8 +303,9 @@ class OHEditor:
         """
         Implement the insert command, which inserts new_str at the specified line in the file content.
         """
-        # Count lines in file
-        num_lines = sum(1 for _ in open(path))
+        # Validate file and count lines
+        self.validate_file(path)
+        num_lines = self._count_lines(path)
 
         if insert_line < 0 or insert_line > num_lines:
             raise EditorToolParameterInvalidError(
