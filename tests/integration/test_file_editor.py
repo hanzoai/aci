@@ -120,9 +120,12 @@ def test_validation_error_formatting():
         path='/nonexistent/file.txt',
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
     assert 'does not exist' in result_json['formatted_output_and_error']
-    assert result_json['error'] == 'Invalid `path` parameter: /nonexistent/file.txt. The path /nonexistent/file.txt does not exist. Please provide a valid path.'
+    assert (
+        result_json['error']
+        == 'Invalid `path` parameter: /nonexistent/file.txt. The path /nonexistent/file.txt does not exist. Please provide a valid path.'
+    )
 
     # Test directory validation for non-view commands
     result = file_editor(
@@ -132,9 +135,10 @@ def test_validation_error_formatting():
         new_str='new',
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
     assert 'only the `view` command' in result_json['formatted_output_and_error']
     assert 'directory and only the `view` command' in result_json['error']
+
 
 def test_str_replace_error_handling(temp_file):
     """Test error handling in str_replace command."""
@@ -151,7 +155,7 @@ def test_str_replace_error_handling(temp_file):
         new_str='something',
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
     assert 'did not appear verbatim' in result_json['formatted_output_and_error']
     assert 'did not appear verbatim' in result_json['error']
 
@@ -166,9 +170,10 @@ def test_str_replace_error_handling(temp_file):
         new_str='new_line',
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
     assert 'Multiple occurrences' in result_json['formatted_output_and_error']
     assert 'lines [1, 2]' in result_json['error']
+
 
 def test_view_range_validation(temp_file):
     """Test validation of view_range parameter."""
@@ -184,8 +189,10 @@ def test_view_range_validation(temp_file):
         view_range=[1],  # Should be [start, end]
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
-    assert 'should be a list of two integers' in result_json['formatted_output_and_error']
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
+    assert (
+        'should be a list of two integers' in result_json['formatted_output_and_error']
+    )
 
     # Test out of bounds range
     result = file_editor(
@@ -194,8 +201,11 @@ def test_view_range_validation(temp_file):
         view_range=[1, 10],  # File only has 3 lines
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
-    assert 'should be smaller than the number of lines' in result_json['formatted_output_and_error']
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
+    assert (
+        'should be smaller than the number of lines'
+        in result_json['formatted_output_and_error']
+    )
 
     # Test invalid range order
     result = file_editor(
@@ -204,8 +214,12 @@ def test_view_range_validation(temp_file):
         view_range=[3, 1],  # End before start
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
-    assert 'should be greater than or equal to' in result_json['formatted_output_and_error']
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
+    assert (
+        'should be greater than or equal to'
+        in result_json['formatted_output_and_error']
+    )
+
 
 def test_insert_validation(temp_file):
     """Test validation in insert command."""
@@ -222,7 +236,7 @@ def test_insert_validation(temp_file):
         new_str='new line',
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
     assert 'should be within the range' in result_json['formatted_output_and_error']
 
     # Test insert beyond file length
@@ -233,8 +247,9 @@ def test_insert_validation(temp_file):
         new_str='new line',
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
     assert 'should be within the range' in result_json['formatted_output_and_error']
+
 
 def test_undo_validation(temp_file):
     """Test undo_edit validation."""
@@ -249,8 +264,9 @@ def test_undo_validation(temp_file):
         path=temp_file,
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
     assert 'No edit history found' in result_json['formatted_output_and_error']
+
 
 def test_successful_operations(temp_file):
     """Test successful file operations and their output formatting."""
@@ -265,8 +281,11 @@ def test_successful_operations(temp_file):
         path=temp_file,
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
-    assert "Here's the result of running `cat -n`" in result_json['formatted_output_and_error']
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
+    assert (
+        "Here's the result of running `cat -n`"
+        in result_json['formatted_output_and_error']
+    )
     assert 'line 1' in result_json['formatted_output_and_error']
 
     # Test str_replace
@@ -277,7 +296,7 @@ def test_successful_operations(temp_file):
         new_str='replaced line',
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
     assert 'has been edited' in result_json['formatted_output_and_error']
     assert 'replaced line' in result_json['formatted_output_and_error']
 
@@ -289,7 +308,7 @@ def test_successful_operations(temp_file):
         new_str='inserted line',
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
     assert 'has been edited' in result_json['formatted_output_and_error']
     assert 'inserted line' in result_json['formatted_output_and_error']
 
@@ -299,8 +318,9 @@ def test_successful_operations(temp_file):
         path=temp_file,
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
     assert 'undone successfully' in result_json['formatted_output_and_error']
+
 
 def test_tab_expansion(temp_file):
     """Test that tabs are properly expanded in file operations."""
@@ -315,7 +335,7 @@ def test_tab_expansion(temp_file):
         path=temp_file,
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
     # Tabs should be expanded to spaces in output
     assert '\t' not in result_json['formatted_output_and_error']
     assert '        indented' in result_json['formatted_output_and_error']
@@ -328,7 +348,7 @@ def test_tab_expansion(temp_file):
         new_str='replaced line',
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
     assert 'replaced line' in result_json['formatted_output_and_error']
 
     # Test str_replace with tabs in new_str
@@ -339,10 +359,13 @@ def test_tab_expansion(temp_file):
         new_str='new\tline\twith\ttabs',
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
     # Tabs should be expanded in the output
     assert '\t' not in result_json['formatted_output_and_error']
-    assert 'new        line        with        tabs' in result_json['formatted_output_and_error']
+    assert (
+        'new        line        with        tabs'
+        in result_json['formatted_output_and_error']
+    )
 
     # Test insert with tabs
     result = file_editor(
@@ -352,10 +375,11 @@ def test_tab_expansion(temp_file):
         new_str='\tindented\tline',
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
     # Tabs should be expanded in the output
     assert '\t' not in result_json['formatted_output_and_error']
     assert '        indented        line' in result_json['formatted_output_and_error']
+
 
 def test_file_validation(temp_file):
     """Test file validation for various file types."""
@@ -368,7 +392,7 @@ def test_file_validation(temp_file):
         path=temp_file,
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
     assert 'binary' in result_json['formatted_output_and_error'].lower()
 
     # Test large file
@@ -381,9 +405,10 @@ def test_file_validation(temp_file):
         path=temp_file,
         enable_linting=False,
     )
-    result_json = json.loads(result[result.find('{'):result.rfind('}')+1])
+    result_json = json.loads(result[result.find('{') : result.rfind('}') + 1])
     assert 'too large' in result_json['formatted_output_and_error']
     assert '10MB' in result_json['formatted_output_and_error']
+
 
 def test_file_read_memory_usage(temp_file):
     """Test that reading a large file uses memory efficiently."""
