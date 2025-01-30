@@ -27,22 +27,26 @@ class FileHistoryManager:
     def add_history(self, file_path: Path, content: str):
         """Add a new history entry for a file."""
         key = str(file_path)
-        # Get list of entry indices for this file
+        # Get list of entry indices and counter for this file
         entries_key = f'{key}:entries'
+        counter_key = f'{key}:counter'
         entries = self.cache.get(entries_key, [])
+        counter = self.cache.get(counter_key, 0)
 
-        # Add new entry
-        entry_key = f'{key}:{len(entries)}'
+        # Add new entry with monotonically increasing counter
+        entry_key = f'{key}:{counter}'
         self.cache.set(entry_key, content)
         entries.append(entry_key)
+        counter += 1
 
         # Keep only last N entries
         if len(entries) > self.max_history_per_file:
             old_key = entries.pop(0)
             self.cache.delete(old_key)
 
-        # Update entries list
+        # Update entries list and counter
         self.cache.set(entries_key, entries)
+        self.cache.set(counter_key, counter)
         print(f'History saved for {file_path}. Current history size: {len(entries)}')
 
     def get_last_history(self, file_path: Path) -> Optional[str]:
@@ -67,11 +71,13 @@ class FileHistoryManager:
         """Clear history for a given file."""
         key = str(file_path)
         entries_key = f'{key}:entries'
+        counter_key = f'{key}:counter'
         entries = self.cache.get(entries_key, [])
 
         # Delete all entries
         for entry_key in entries:
             self.cache.delete(entry_key)
 
-        # Delete entries list
+        # Delete entries list and counter
         self.cache.delete(entries_key)
+        self.cache.delete(counter_key)
