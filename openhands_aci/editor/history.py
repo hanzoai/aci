@@ -11,18 +11,23 @@ class FileHistoryManager:
     """Manages file edit history with disk-based storage and memory constraints."""
 
     def __init__(
-        self, max_history_per_file: int = 10, history_dir: Optional[Path] = None
+        self, max_history_per_file: int = 5, history_dir: Optional[Path] = None
     ):
         """Initialize the history manager.
 
         Args:
-            max_history_per_file: Maximum number of history entries to keep per file
+            max_history_per_file: Maximum number of history entries to keep per file (default: 5)
             history_dir: Directory to store history files. If None, uses a temp directory
+
+        Notes:
+            - Each file's history is limited to the last N entries to conserve memory
+            - The disk cache is limited to 500MB total to prevent excessive disk usage
+            - Older entries are automatically removed when limits are exceeded
         """
         self.max_history_per_file = max_history_per_file
         if history_dir is None:
             history_dir = Path(tempfile.mkdtemp(prefix='oh_editor_history_'))
-        self.cache = Cache(str(history_dir), size_limit=1e9)  # 1GB size limit
+        self.cache = Cache(str(history_dir), size_limit=5e8)  # 500MB size limit
 
     def add_history(self, file_path: Path, content: str):
         """Add a new history entry for a file."""

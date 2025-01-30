@@ -6,6 +6,24 @@ from pathlib import Path
 from openhands_aci.editor.history import FileHistoryManager
 
 
+def test_default_history_limit():
+    """Test that default history limit is 5 entries."""
+    with tempfile.NamedTemporaryFile() as temp_file:
+        path = Path(temp_file.name)
+        manager = FileHistoryManager()
+
+        # Add 6 entries - this should trigger removal of the first entry
+        for i in range(6):
+            manager.add_history(path, f'content{i}')
+
+        # Get the entries list
+        entries = manager.cache.get(f'{str(path)}:entries', [])
+        assert len(entries) == 5  # Should only keep last 5 entries
+        # First entry should be content1, last should be content5
+        assert manager.cache.get(entries[0]).startswith('content1')
+        assert manager.cache.get(entries[-1]).startswith('content5')
+
+
 def test_history_keys_are_unique():
     """Test that history keys remain unique even after removing old entries."""
     with tempfile.NamedTemporaryFile() as temp_file:
