@@ -1,4 +1,5 @@
 """Tests for file history management."""
+
 import tempfile
 from pathlib import Path
 
