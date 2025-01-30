@@ -1,5 +1,6 @@
 import mimetypes
 import os
+import re
 import shutil
 import tempfile
 from pathlib import Path
@@ -111,19 +112,17 @@ class OHEditor:
         # Read the entire file first to handle both single-line and multi-line replacements
         file_content = self.read_file(path).expandtabs()
 
-        # Find all occurrences
-        occurrences = []
-        start_idx = 0
-        while True:
-            idx = file_content.find(old_str, start_idx)
-            if idx == -1:
-                break
-            # Count newlines before this occurrence to get the line number
-            line_num = file_content.count('\n', 0, idx) + 1
-            # Store the actual matched text to preserve line endings
-            matched_text = file_content[idx : idx + len(old_str)]
-            occurrences.append((line_num, matched_text, idx))
-            start_idx = idx + len(old_str)
+        # Find all occurrences using regex
+        # Escape special regex characters in old_str to match it literally
+        pattern = re.escape(old_str)
+        occurrences = [
+            (
+                file_content.count('\n', 0, match.start()) + 1,  # line number
+                match.group(),  # matched text
+                match.start(),  # start position
+            )
+            for match in re.finditer(pattern, file_content)
+        ]
 
         if not occurrences:
             raise ToolError(
