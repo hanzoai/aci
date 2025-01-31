@@ -328,26 +328,26 @@ class OHEditor:
 
         # Create temporary file for the new content
         with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
-            # Copy lines before insert point
+            # Copy lines before insert point and save them for history
+            history_lines = []
             with open(path, 'r') as f:
                 for i, line in enumerate(f, 1):
                     if i > insert_line:
                         break
                     temp_file.write(line.expandtabs())
+                    history_lines.append(line)
 
             # Insert new content
             for line in new_str_lines:
                 temp_file.write(line + '\n')
 
-            # Copy remaining lines
+            # Copy remaining lines and save them for history
             with open(path, 'r') as f:
                 for i, line in enumerate(f, 1):
                     if i <= insert_line:
                         continue
                     temp_file.write(line.expandtabs())
-
-        # Read the original content for history
-        file_text = self.read_file(path)
+                    history_lines.append(line)
 
         # Move temporary file to original location
         shutil.move(temp_file.name, path)
@@ -361,10 +361,11 @@ class OHEditor:
         snippet = self.read_file(path, start_line=start_line, end_line=end_line)
 
         # Save history
+        file_text = ''.join(history_lines)
         self._history_manager.add_history(path, file_text)
 
-        # Read new content for result
-        new_file_text = self.read_file(path)
+        # For the result, we'll just use the snippet we already have
+        new_file_text = snippet
 
         success_message = f'The file {path} has been edited. '
         success_message += self._make_output(
@@ -457,7 +458,7 @@ class OHEditor:
         if file_size > max_size:
             raise FileValidationError(
                 path=str(path),
-                reason=f'File is too large ({file_size / 1024 / 1024:.1f}MB). Maximum allowed size is {max_size / 1024 / 1024:.1f}MB.',
+                reason=f'File is too large ({file_size / 1024 / 1024:.1f}MB). Maximum allowed size is {int(max_size / 1024 / 1024)}MB.',
             )
 
         # Check if file is binary
