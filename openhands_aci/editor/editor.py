@@ -4,7 +4,7 @@ import re
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Literal, Optional, get_args
+from typing import Literal, get_args
 
 from openhands_aci.linter import DefaultLinter
 from openhands_aci.utils.shell import run_shell_cmd
@@ -44,10 +44,17 @@ class OHEditor:
     """
 
     TOOL_NAME = 'oh_editor'
+    MAX_FILE_SIZE_MB = 10  # Maximum file size in MB
 
-    def __init__(self):
+    def __init__(self, max_file_size_mb: int | None = None):
+        """Initialize the editor.
+        
+        Args:
+            max_file_size_mb: Maximum file size in MB. If None, uses the default MAX_FILE_SIZE_MB.
+        """
         self._linter = DefaultLinter()
         self._history_manager = FileHistoryManager(max_history_per_file=10)
+        self._max_file_size = (max_file_size_mb or self.MAX_FILE_SIZE_MB) * 1024 * 1024  # Convert to bytes
 
     def __call__(
         self,
@@ -442,13 +449,13 @@ class OHEditor:
         if not path.is_file():
             return  # Skip validation for directories
 
-        # Check file size (10MB limit)
+        # Check file size
         file_size = os.path.getsize(path)
-        max_size = 10 * 1024 * 1024  # 10MB in bytes
+        max_size = self._max_file_size
         if file_size > max_size:
             raise FileValidationError(
                 path=str(path),
-                reason=f'File is too large ({file_size / 1024 / 1024:.1f}MB). Maximum allowed size is 10MB.',
+                reason=f'File is too large ({file_size / 1024 / 1024:.1f}MB). Maximum allowed size is {max_size / 1024 / 1024:.1f}MB.',
             )
 
         # Check if file is binary
