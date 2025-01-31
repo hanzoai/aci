@@ -360,11 +360,12 @@ class OHEditor:
         )
         snippet = self.read_file(path, start_line=start_line, end_line=end_line)
 
-        # Save history
+        # Save history - we already have the lines in memory
         file_text = ''.join(history_lines)
         self._history_manager.add_history(path, file_text)
 
-        # For the result, we'll just use the snippet we already have
+        # For the result, we'll use the snippet we already have
+        # This is safe because the result is only used for display purposes
         new_file_text = snippet
 
         success_message = f'The file {path} has been edited. '
