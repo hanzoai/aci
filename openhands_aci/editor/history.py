@@ -52,7 +52,6 @@ class FileHistoryManager:
         # Update entries list and counter
         self.cache.set(entries_key, entries)
         self.cache.set(counter_key, counter)
-        print(f'History saved for {file_path}. Current history size: {len(entries)}')
 
     def get_last_history(self, file_path: Path) -> Optional[str]:
         """Get the most recent history entry for a file."""
