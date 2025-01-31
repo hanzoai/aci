@@ -364,9 +364,8 @@ class OHEditor:
         file_text = ''.join(history_lines)
         self._history_manager.add_history(path, file_text)
 
-        # For the result, we'll use the snippet we already have
-        # This is safe because the result is only used for display purposes
-        new_file_text = snippet
+        # Read new content for result
+        new_file_text = self.read_file(path)
 
         success_message = f'The file {path} has been edited. '
         success_message += self._make_output(
