@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openhands-aci"
-version = "0.1.9"
+version = "0.2.0"
 description = "An Agent-Computer Interface (ACI) designed for software development agents OpenHands."
 authors = ["OpenHands"]
 license = "MIT"
@@ -31,6 +31,7 @@ pre-commit = "^4.0.1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.3"
+psutil = "^5.9.8"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"

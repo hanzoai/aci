@@ -1,5 +1,8 @@
+import mimetypes
+import os
+import re
+import shutil
 import tempfile
-from collections import defaultdict
 from pathlib import Path
 from typing import Literal, get_args
 
@@ -10,8 +13,10 @@ from .config import SNIPPET_CONTEXT_WINDOW
 from .exceptions import (
     EditorToolParameterInvalidError,
     EditorToolParameterMissingError,
+    FileValidationError,
     ToolError,
 )
+from .history import FileHistoryManager
 from .prompts import DIRECTORY_CONTENT_TRUNCATED_NOTICE, FILE_CONTENT_TRUNCATED_NOTICE
 from .results import CLIResult, maybe_truncate
 
@@ -39,10 +44,19 @@ class OHEditor:
     """
 
     TOOL_NAME = 'oh_editor'
+    MAX_FILE_SIZE_MB = 10  # Maximum file size in MB
 
-    def __init__(self):
-        self._file_history: dict[Path, list[str]] = defaultdict(list)
+    def __init__(self, max_file_size_mb: int | None = None):
+        """Initialize the editor.
+
+        Args:
+            max_file_size_mb: Maximum file size in MB. If None, uses the default MAX_FILE_SIZE_MB.
+        """
         self._linter = DefaultLinter()
+        self._history_manager = FileHistoryManager(max_history_per_file=10)
+        self._max_file_size = (
+            (max_file_size_mb or self.MAX_FILE_SIZE_MB) * 1024 * 1024
+        )  # Convert to bytes
 
     def __call__(
         self,
@@ -65,7 +79,7 @@ class OHEditor:
             if file_text is None:
                 raise EditorToolParameterMissingError(command, 'file_text')
             self.write_file(_path, file_text)
-            self._file_history[_path].append(file_text)
+            self._history_manager.add_history(_path, file_text)
             return CLIResult(
                 path=str(_path),
                 new_content=file_text,
@@ -95,52 +109,68 @@ class OHEditor:
             f'Unrecognized command {command}. The allowed commands for the {self.TOOL_NAME} tool are: {", ".join(get_args(Command))}'
         )
 
+    def _count_lines(self, path: Path) -> int:
+        """
+        Count the number of lines in a file safely.
+        """
+        with open(path) as f:
+            return sum(1 for _ in f)
+
     def str_replace(
         self, path: Path, old_str: str, new_str: str | None, enable_linting: bool
     ) -> CLIResult:
         """
         Implement the str_replace command, which replaces old_str with new_str in the file content.
         """
-        file_content = self.read_file(path).expandtabs()
+        self.validate_file(path)
         old_str = old_str.expandtabs()
         new_str = new_str.expandtabs() if new_str is not None else ''
 
-        # Check if old_str is unique in the file
-        occurrences = file_content.count(old_str)
-        if occurrences == 0:
+        # Read the entire file first to handle both single-line and multi-line replacements
+        file_content = self.read_file(path).expandtabs()
+
+        # Find all occurrences using regex
+        # Escape special regex characters in old_str to match it literally
+        pattern = re.escape(old_str)
+        occurrences = [
+            (
+                file_content.count('\n', 0, match.start()) + 1,  # line number
+                match.group(),  # matched text
+                match.start(),  # start position
+            )
+            for match in re.finditer(pattern, file_content)
+        ]
+
+        if not occurrences:
             raise ToolError(
                 f'No replacement was performed, old_str `{old_str}` did not appear verbatim in {path}.'
             )
-        if occurrences > 1:
-            # Find starting line numbers for each occurrence
-            line_numbers = []
-            start_idx = 0
-            while True:
-                idx = file_content.find(old_str, start_idx)
-                if idx == -1:
-                    break
-                # Count newlines before this occurrence to get the line number
-                line_num = file_content.count('\n', 0, idx) + 1
-                line_numbers.append(line_num)
-                start_idx = idx + 1
+        if len(occurrences) > 1:
+            line_numbers = [line for line, _, _ in occurrences]
             raise ToolError(
                 f'No replacement was performed. Multiple occurrences of old_str `{old_str}` in lines {line_numbers}. Please ensure it is unique.'
             )
 
-        # Replace old_str with new_str
-        new_file_content = file_content.replace(old_str, new_str)
+        # We found exactly one occurrence
+        replacement_line, matched_text, idx = occurrences[0]
+
+        # Create new content by replacing just the matched text
+        new_file_content = (
+            file_content[:idx] + new_str + file_content[idx + len(matched_text) :]
+        )
 
         # Write the new content to the file
         self.write_file(path, new_file_content)
 
         # Save the content to history
-        self._file_history[path].append(file_content)
+        self._history_manager.add_history(path, file_content)
 
         # Create a snippet of the edited section
-        replacement_line = file_content.split(old_str)[0].count('\n')
         start_line = max(0, replacement_line - SNIPPET_CONTEXT_WINDOW)
         end_line = replacement_line + SNIPPET_CONTEXT_WINDOW + new_str.count('\n')
-        snippet = '\n'.join(new_file_content.split('\n')[start_line : end_line + 1])
+
+        # Read just the snippet range
+        snippet = self.read_file(path, start_line=start_line, end_line=end_line)
 
         # Prepare the success message
         success_message = f'The file {path} has been edited. '
@@ -214,9 +244,13 @@ class OHEditor:
                 prev_exist=True,
             )
 
-        file_content = self.read_file(path)
+        # Validate file and count lines
+        self.validate_file(path)
+        num_lines = self._count_lines(path)
+
         start_line = 1
         if not view_range:
+            file_content = self.read_file(path)
             return CLIResult(
                 output=self._make_output(file_content, str(path), start_line),
                 path=str(path),
@@ -230,8 +264,6 @@ class OHEditor:
                 'It should be a list of two integers.',
             )
 
-        file_content_lines = file_content.split('\n')
-        num_lines = len(file_content_lines)
         start_line, end_line = view_range
         if start_line < 1 or start_line > num_lines:
             raise EditorToolParameterInvalidError(
@@ -255,9 +287,9 @@ class OHEditor:
             )
 
         if end_line == -1:
-            file_content = '\n'.join(file_content_lines[start_line - 1 :])
-        else:
-            file_content = '\n'.join(file_content_lines[start_line - 1 : end_line])
+            end_line = num_lines
+
+        file_content = self.read_file(path, start_line=start_line, end_line=end_line)
         return CLIResult(
             path=str(path),
             output=self._make_output(file_content, str(path), start_line),
@@ -268,6 +300,7 @@ class OHEditor:
         """
         Write the content of a file to a given path; raise a ToolError if an error occurs.
         """
+        self.validate_file(path)
         try:
             path.write_text(file_text)
         except Exception as e:
@@ -279,16 +312,9 @@ class OHEditor:
         """
         Implement the insert command, which inserts new_str at the specified line in the file content.
         """
-        try:
-            file_text = self.read_file(path)
-        except Exception as e:
-            raise ToolError(f'Ran into {e} while trying to read {path}') from None
-
-        file_text = file_text.expandtabs()
-        new_str = new_str.expandtabs()
-
-        file_text_lines = file_text.split('\n')
-        num_lines = len(file_text_lines)
+        # Validate file and count lines
+        self.validate_file(path)
+        num_lines = self._count_lines(path)
 
         if insert_line < 0 or insert_line > num_lines:
             raise EditorToolParameterInvalidError(
@@ -297,24 +323,49 @@ class OHEditor:
                 f'It should be within the range of lines of the file: {[0, num_lines]}',
             )
 
+        new_str = new_str.expandtabs()
         new_str_lines = new_str.split('\n')
-        new_file_text_lines = (
-            file_text_lines[:insert_line]
-            + new_str_lines
-            + file_text_lines[insert_line:]
-        )
-        snippet_lines = (
-            file_text_lines[max(0, insert_line - SNIPPET_CONTEXT_WINDOW) : insert_line]
-            + new_str_lines
-            + file_text_lines[
-                insert_line : min(num_lines, insert_line + SNIPPET_CONTEXT_WINDOW)
-            ]
-        )
-        new_file_text = '\n'.join(new_file_text_lines)
-        snippet = '\n'.join(snippet_lines)
 
-        self.write_file(path, new_file_text)
-        self._file_history[path].append(file_text)
+        # Create temporary file for the new content
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
+            # Copy lines before insert point and save them for history
+            history_lines = []
+            with open(path, 'r') as f:
+                for i, line in enumerate(f, 1):
+                    if i > insert_line:
+                        break
+                    temp_file.write(line.expandtabs())
+                    history_lines.append(line)
+
+            # Insert new content
+            for line in new_str_lines:
+                temp_file.write(line + '\n')
+
+            # Copy remaining lines and save them for history
+            with open(path, 'r') as f:
+                for i, line in enumerate(f, 1):
+                    if i <= insert_line:
+                        continue
+                    temp_file.write(line.expandtabs())
+                    history_lines.append(line)
+
+        # Move temporary file to original location
+        shutil.move(temp_file.name, path)
+
+        # Read just the snippet range
+        start_line = max(1, insert_line - SNIPPET_CONTEXT_WINDOW)
+        end_line = min(
+            num_lines + len(new_str_lines),
+            insert_line + SNIPPET_CONTEXT_WINDOW + len(new_str_lines),
+        )
+        snippet = self.read_file(path, start_line=start_line, end_line=end_line)
+
+        # Save history - we already have the lines in memory
+        file_text = ''.join(history_lines)
+        self._history_manager.add_history(path, file_text)
+
+        # Read new content for result
+        new_file_text = self.read_file(path)
 
         success_message = f'The file {path} has been edited. '
         success_message += self._make_output(
@@ -373,11 +424,11 @@ class OHEditor:
         """
         Implement the undo_edit command.
         """
-        if not self._file_history[path]:
+        current_text = self.read_file(path).expandtabs()
+        old_text = self._history_manager.get_last_history(path)
+        if old_text is None:
             raise ToolError(f'No edit history found for {path}.')
 
-        current_text = self.read_file(path).expandtabs()
-        old_text = self._file_history[path].pop()
         self.write_file(path, old_text)
 
         return CLIResult(
@@ -388,12 +439,84 @@ class OHEditor:
             new_content=old_text,
         )
 
-    def read_file(self, path: Path) -> str:
+    def validate_file(self, path: Path) -> None:
+        """
+        Validate a file for reading or editing operations.
+
+        Args:
+            path: Path to the file to validate
+
+        Raises:
+            FileValidationError: If the file fails validation
+        """
+        if not path.is_file():
+            return  # Skip validation for directories
+
+        # Check file size
+        file_size = os.path.getsize(path)
+        max_size = self._max_file_size
+        if file_size > max_size:
+            raise FileValidationError(
+                path=str(path),
+                reason=f'File is too large ({file_size / 1024 / 1024:.1f}MB). Maximum allowed size is {int(max_size / 1024 / 1024)}MB.',
+            )
+
+        # Check if file is binary
+        mime_type, _ = mimetypes.guess_type(str(path))
+        if mime_type is None:
+            # If mime_type is None, try to detect if it's binary by reading first chunk
+            try:
+                chunk = open(path, 'rb').read(1024)
+                if b'\0' in chunk:  # Common way to detect binary files
+                    raise FileValidationError(
+                        path=str(path),
+                        reason='File appears to be binary. Only text files can be edited.',
+                    )
+            except Exception as e:
+                raise FileValidationError(
+                    path=str(path), reason=f'Error checking file type: {str(e)}'
+                )
+        elif not mime_type.startswith('text/'):
+            # Known non-text mime type
+            raise FileValidationError(
+                path=str(path),
+                reason=f'File type {mime_type} is not supported. Only text files can be edited.',
+            )
+
+    def read_file(
+        self,
+        path: Path,
+        start_line: int | None = None,
+        end_line: int | None = None,
+    ) -> str:
         """
         Read the content of a file from a given path; raise a ToolError if an error occurs.
+
+        Args:
+            path: Path to the file to read
+            start_line: Optional start line number (1-based). If provided with end_line, only reads that range.
+            end_line: Optional end line number (1-based). Must be provided with start_line.
         """
+        self.validate_file(path)
         try:
-            return path.read_text()
+            if start_line is not None and end_line is not None:
+                # Read only the specified line range
+                lines = []
+                with open(path, 'r') as f:
+                    for i, line in enumerate(f, 1):
+                        if i > end_line:
+                            break
+                        if i >= start_line:
+                            lines.append(line)
+                return ''.join(lines)
+            elif start_line is not None or end_line is not None:
+                raise ValueError(
+                    'Both start_line and end_line must be provided together'
+                )
+            else:
+                # Use line-by-line reading to avoid loading entire file into memory
+                with open(path, 'r') as f:
+                    return ''.join(f)
         except Exception as e:
             raise ToolError(f'Ran into {e} while trying to read {path}') from None
 
