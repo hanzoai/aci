@@ -48,13 +48,15 @@ class OHEditor:
 
     def __init__(self, max_file_size_mb: int | None = None):
         """Initialize the editor.
-        
+
         Args:
             max_file_size_mb: Maximum file size in MB. If None, uses the default MAX_FILE_SIZE_MB.
         """
         self._linter = DefaultLinter()
         self._history_manager = FileHistoryManager(max_history_per_file=10)
-        self._max_file_size = (max_file_size_mb or self.MAX_FILE_SIZE_MB) * 1024 * 1024  # Convert to bytes
+        self._max_file_size = (
+            (max_file_size_mb or self.MAX_FILE_SIZE_MB) * 1024 * 1024
+        )  # Convert to bytes
 
     def __call__(
         self,
@@ -483,8 +485,8 @@ class OHEditor:
     def read_file(
         self,
         path: Path,
-        start_line: Optional[int] = None,
-        end_line: Optional[int] = None,
+        start_line: int | None = None,
+        end_line: int | None = None,
     ) -> str:
         """
         Read the content of a file from a given path; raise a ToolError if an error occurs.
