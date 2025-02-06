@@ -146,7 +146,7 @@ class OHEditor:
                 f'No replacement was performed, old_str `{old_str}` did not appear verbatim in {path}.'
             )
         if len(occurrences) > 1:
-            line_numbers = [line for line, _, _ in occurrences]
+            line_numbers = sorted(set(line for line, _, _ in occurrences))
             raise ToolError(
                 f'No replacement was performed. Multiple occurrences of old_str `{old_str}` in lines {line_numbers}. Please ensure it is unique.'
             )
