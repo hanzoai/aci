@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openhands-aci"
-version = "0.2.1"
+version = "0.2.2"
 description = "An Agent-Computer Interface (ACI) designed for software development agents OpenHands."
 authors = ["OpenHands"]
 license = "MIT"
@@ -22,6 +22,7 @@ grep-ast = "0.3.3"
 diskcache = "^5.6.3"
 flake8 = "*"
 whatthepatch = "^1.0.6"
+binaryornot = "^0.4.4"
 
 
 [tool.poetry.group.dev.dependencies]
