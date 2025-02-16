@@ -1,34 +1,23 @@
-"""Compatibility layer for tree-sitter-languages with tree-sitter 0.24.0."""
+"""Compatibility layer for tree-sitter 0.24.0."""
 
-import importlib.util
+import importlib
 from tree_sitter import Language, Parser
 
-
-def get_language_module(language):
-    """Try to import the tree-sitter module for a given language."""
-    module_name = f'tree_sitter_{language}'
-    spec = importlib.util.find_spec(module_name)
-    if spec is None:
-        raise ImportError(
-            f'Language {language} is not supported because {module_name} is not installed. '
-            f'You can install it with:\n\n    pip install {module_name}\n'
-        )
-    return importlib.util.module_from_spec(spec)
-
-
-def get_language(language):
-    """Get a Language object for the given language name."""
-    try:
-        module = get_language_module(language)
-        spec = module.__spec__
-        spec.loader.exec_module(module)
-        return Language(module.language())
-    except ImportError as e:
-        raise ValueError(str(e)) from e
+# Cache of loaded languages
+_language_cache = {}
 
 
 def get_parser(language):
     """Get a Parser object for the given language name."""
-    language = get_language(language)
-    parser = Parser(language)
-    return parser
+    if language not in _language_cache:
+        # Try to import the language module
+        module_name = f"tree_sitter_{language}"
+        try:
+            module = importlib.import_module(module_name)
+            _language_cache[language] = Language(module.language())
+        except ImportError:
+            raise ValueError(
+                f"Language {language} is not supported. Please install {module_name} package."
+            )
+
+    return Parser(_language_cache[language])
