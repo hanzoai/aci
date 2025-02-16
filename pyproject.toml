@@ -23,6 +23,8 @@ diskcache = "^5.6.3"
 flake8 = "*"
 whatthepatch = "^1.0.6"
 binaryornot = "^0.4.4"
+tree-sitter-python = "^0.23.6"
+tree-sitter-ruby = "^0.23.1"
 
 
 [tool.poetry.group.dev.dependencies]

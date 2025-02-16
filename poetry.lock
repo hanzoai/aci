@@ -2428,6 +2428,48 @@ files = [
 tree-sitter = "*"
 
 [[package]]
+name = "tree-sitter-python"
+version = "0.23.6"
+description = "Python grammar for tree-sitter"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "tree_sitter_python-0.23.6-cp39-abi3-macosx_10_9_x86_64.whl", hash = "sha256:28fbec8f74eeb2b30292d97715e60fac9ccf8a8091ce19b9d93e9b580ed280fb"},
+    {file = "tree_sitter_python-0.23.6-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:680b710051b144fedf61c95197db0094f2245e82551bf7f0c501356333571f7a"},
+    {file = "tree_sitter_python-0.23.6-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:8a9dcef55507b6567207e8ee0a6b053d0688019b47ff7f26edc1764b7f4dc0a4"},
+    {file = "tree_sitter_python-0.23.6-cp39-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:29dacdc0cd2f64e55e61d96c6906533ebb2791972bec988450c46cce60092f5d"},
+    {file = "tree_sitter_python-0.23.6-cp39-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:7e048733c36f564b379831689006801feb267d8194f9e793fbb395ef1723335d"},
+    {file = "tree_sitter_python-0.23.6-cp39-abi3-win_amd64.whl", hash = "sha256:a24027248399fb41594b696f929f9956828ae7cc85596d9f775e6c239cd0c2be"},
+    {file = "tree_sitter_python-0.23.6-cp39-abi3-win_arm64.whl", hash = "sha256:71334371bd73d5fe080aed39fbff49ed8efb9506edebe16795b0c7567ed6a272"},
+    {file = "tree_sitter_python-0.23.6.tar.gz", hash = "sha256:354bfa0a2f9217431764a631516f85173e9711af2c13dbd796a8815acfe505d9"},
+]
+
+[package.extras]
+core = ["tree-sitter (>=0.22,<1.0)"]
+
+[[package]]
+name = "tree-sitter-ruby"
+version = "0.23.1"
+description = "Ruby grammar for tree-sitter"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "tree_sitter_ruby-0.23.1-cp39-abi3-macosx_10_9_x86_64.whl", hash = "sha256:39f391322d2210843f07081182dbf00f8f69cfbfa4687b9575cac6d324bae443"},
+    {file = "tree_sitter_ruby-0.23.1-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:aa4ee7433bd42fac22e2dad4a3c0f332292ecf482e610316828c711a0bb7f794"},
+    {file = "tree_sitter_ruby-0.23.1-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:62b36813a56006b7569db7868f6b762caa3f4e419bd0f8cf9ccbb4abb1b6254c"},
+    {file = "tree_sitter_ruby-0.23.1-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f7bcd93972b4ca2803856d4fe0fbd04123ff29c4592bbb9f12a27528bd252341"},
+    {file = "tree_sitter_ruby-0.23.1-cp39-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:66c65d6c2a629783ca4ab2bab539bd6f271ce6f77cacb62845831e11665b5bd3"},
+    {file = "tree_sitter_ruby-0.23.1-cp39-abi3-win_amd64.whl", hash = "sha256:02e2c19ebefe29226c14aa63e11e291d990f5b5c20a99940ab6e7eda44e744e5"},
+    {file = "tree_sitter_ruby-0.23.1-cp39-abi3-win_arm64.whl", hash = "sha256:ed042007e89f2cceeb1cbdd8b0caa68af1e2ce54c7eb2053ace760f90657ac9f"},
+    {file = "tree_sitter_ruby-0.23.1.tar.gz", hash = "sha256:886ed200bfd1f3ca7628bf1c9fefd42421bbdba70c627363abda67f662caa21e"},
+]
+
+[package.extras]
+core = ["tree-sitter (>=0.22,<1.0)"]
+
+[[package]]
 name = "typing-extensions"
 version = "4.12.2"
 description = "Backported and Experimental Type Hints for Python 3.8+"
@@ -2622,4 +2664,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "b62bcb354b5c23eb028d3459b52ae213c84d02693113b8014c899af83fcf6c50"
+content-hash = "f5e6c13e972acea2720682801487a698dcb221160a0b0a8fed60f5f305ea918c"
