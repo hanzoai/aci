@@ -1,10 +1,11 @@
 """History management for file edits with disk-based storage and memory constraints."""
 
+import logging
 import tempfile
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
-from diskcache import Cache
+from .file_cache import FileCache
 
 
 class FileHistoryManager:
@@ -21,67 +22,91 @@ class FileHistoryManager:
 
         Notes:
             - Each file's history is limited to the last N entries to conserve memory
-            - The disk cache is limited to 500MB total to prevent excessive disk usage
+            - The file cache is limited to prevent excessive disk usage
             - Older entries are automatically removed when limits are exceeded
         """
         self.max_history_per_file = max_history_per_file
         if history_dir is None:
             history_dir = Path(tempfile.mkdtemp(prefix='oh_editor_history_'))
-        self.cache = Cache(str(history_dir), size_limit=5e8)  # 500MB size limit
+        self.cache = FileCache(str(history_dir))
+        self.logger = logging.getLogger(__name__)
+
+    def _get_metadata_key(self, file_path: Path) -> str:
+        return f'{file_path}.metadata'
+
+    def _get_history_key(self, file_path: Path, counter: int) -> str:
+        return f'{file_path}.{counter}'
 
     def add_history(self, file_path: Path, content: str):
         """Add a new history entry for a file."""
-        key = str(file_path)
-        # Get list of entry indices and counter for this file
-        entries_key = f'{key}:entries'
-        counter_key = f'{key}:counter'
-        entries = self.cache.get(entries_key, [])
-        counter = self.cache.get(counter_key, 0)
+        metadata_key = self._get_metadata_key(file_path)
+        metadata = self.cache.get(metadata_key, {'entries': [], 'counter': 0})
+        counter = metadata['counter']
 
-        # Add new entry with monotonically increasing counter
-        entry_key = f'{key}:{counter}'
-        self.cache.set(entry_key, content)
-        entries.append(entry_key)
-        counter += 1
+        # Add new entry
+        history_key = self._get_history_key(file_path, counter)
+        self.cache.set(history_key, content)
+
+        metadata['entries'].append(counter)
+        metadata['counter'] += 1
 
         # Keep only last N entries
-        if len(entries) > self.max_history_per_file:
-            old_key = entries.pop(0)
-            self.cache.delete(old_key)
+        while len(metadata['entries']) > self.max_history_per_file:
+            old_counter = metadata['entries'].pop(0)
+            old_history_key = self._get_history_key(file_path, old_counter)
+            self.cache.delete(old_history_key)
 
-        # Update entries list and counter
-        self.cache.set(entries_key, entries)
-        self.cache.set(counter_key, counter)
+        self.cache.set(metadata_key, metadata)
 
     def get_last_history(self, file_path: Path) -> Optional[str]:
         """Get the most recent history entry for a file."""
-        key = str(file_path)
-        entries_key = f'{key}:entries'
-        entries = self.cache.get(entries_key, [])
+        metadata_key = self._get_metadata_key(file_path)
+        metadata = self.cache.get(metadata_key, {'entries': [], 'counter': 0})
+        entries = metadata['entries']
 
         if not entries:
             return None
 
-        # Get and remove last entry
-        last_key = entries.pop()
-        content = self.cache.get(last_key)
-        self.cache.delete(last_key)
+        # Get the last entry without removing it
+        last_counter = entries[-1]
+        history_key = self._get_history_key(file_path, last_counter)
+        content = self.cache.get(history_key)
 
-        # Update entries list
-        self.cache.set(entries_key, entries)
+        if content is None:
+            self.logger.warning(f'History entry not found for {file_path}')
+            return None
+
         return content
 
     def clear_history(self, file_path: Path):
         """Clear history for a given file."""
-        key = str(file_path)
-        entries_key = f'{key}:entries'
-        counter_key = f'{key}:counter'
-        entries = self.cache.get(entries_key, [])
+        metadata_key = self._get_metadata_key(file_path)
+        metadata = self.cache.get(metadata_key, {'entries': [], 'counter': 0})
 
-        # Delete all entries
-        for entry_key in entries:
-            self.cache.delete(entry_key)
+        # Delete all history entries
+        for counter in metadata['entries']:
+            history_key = self._get_history_key(file_path, counter)
+            self.cache.delete(history_key)
 
-        # Delete entries list and counter
-        self.cache.delete(entries_key)
-        self.cache.delete(counter_key)
+        # Clear metadata
+        self.cache.set(metadata_key, {'entries': [], 'counter': 0})
+
+    def get_all_history(self, file_path: Path) -> List[str]:
+        """Get all history entries for a file."""
+        metadata_key = self._get_metadata_key(file_path)
+        metadata = self.cache.get(metadata_key, {'entries': [], 'counter': 0})
+        entries = metadata['entries']
+
+        history = []
+        for counter in entries:
+            history_key = self._get_history_key(file_path, counter)
+            content = self.cache.get(history_key)
+            if content is not None:
+                history.append(content)
+
+        return history
+
+    def get_metadata(self, file_path: Path):
+        """Get metadata for a file (for testing purposes)."""
+        metadata_key = self._get_metadata_key(file_path)
+        return self.cache.get(metadata_key, {'entries': [], 'counter': 0})

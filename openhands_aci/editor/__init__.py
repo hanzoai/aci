@@ -3,9 +3,12 @@ import uuid
 
 from .editor import Command, OHEditor
 from .exceptions import ToolError
+from .file_cache import FileCache
 from .results import ToolResult
 
 _GLOBAL_EDITOR = OHEditor()
+
+__all__ = ['Command', 'OHEditor', 'ToolError', 'ToolResult', 'FileCache', 'file_editor']
 
 
 def _make_api_tool_result(tool_result: ToolResult) -> str:
@@ -44,6 +47,20 @@ def file_editor(
 
     formatted_output_and_error = _make_api_tool_result(result)
     marker_id = uuid.uuid4().hex
-    return f"""<oh_aci_output_{marker_id}>
-{json.dumps(result.to_dict(extra_field={'formatted_output_and_error': formatted_output_and_error}), indent=2)}
-</oh_aci_output_{marker_id}>"""
+
+    def json_generator():
+        yield '{'
+        first = True
+        for key, value in result.to_dict().items():
+            if not first:
+                yield ','
+            first = False
+            yield f'"{key}": {json.dumps(value)}'
+        yield f', "formatted_output_and_error": {json.dumps(formatted_output_and_error)}'
+        yield '}'
+
+    return (
+        f'<oh_aci_output_{marker_id}>\n'
+        + ''.join(json_generator())
+        + f'\n</oh_aci_output_{marker_id}>'
+    )
