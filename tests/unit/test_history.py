@@ -100,3 +100,43 @@ def test_clear_history_resets_counter():
         metadata = manager.get_metadata(path)
         assert len(metadata['entries']) == 1
         assert metadata['entries'][0] == 0  # First key should be 0
+
+
+def test_pop_last_history_removes_entry():
+    """Test that pop_last_history removes the latest entry."""
+    with tempfile.NamedTemporaryFile() as temp_file:
+        path = Path(temp_file.name)
+        manager = FileHistoryManager()
+
+        # Add some entries
+        manager.add_history(path, 'content1')
+        manager.add_history(path, 'content2')
+        manager.add_history(path, 'content3')
+
+        # Pop the last history entry
+        last_entry = manager.pop_last_history(path)
+        assert last_entry == 'content3'
+
+        # Check that the entry has been removed
+        metadata = manager.get_metadata(path)
+        assert len(metadata['entries']) == 2
+
+        # Pop the last history entry again
+        last_entry = manager.pop_last_history(path)
+        assert last_entry == 'content2'
+
+        # Check that the entry has been removed
+        metadata = manager.get_metadata(path)
+        assert len(metadata['entries']) == 1
+
+        # Pop the last history entry one more time
+        last_entry = manager.pop_last_history(path)
+        assert last_entry == 'content1'
+
+        # Check that all entries have been removed
+        metadata = manager.get_metadata(path)
+        assert len(metadata['entries']) == 0
+
+        # Try to pop last history when there are no entries
+        last_entry = manager.pop_last_history(path)
+        assert last_entry is None

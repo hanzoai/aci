@@ -58,8 +58,8 @@ class FileHistoryManager:
 
         self.cache.set(metadata_key, metadata)
 
-    def get_last_history(self, file_path: Path) -> Optional[str]:
-        """Get the most recent history entry for a file."""
+    def pop_last_history(self, file_path: Path) -> Optional[str]:
+        """Pop and return the most recent history entry for a file."""
         metadata_key = self._get_metadata_key(file_path)
         metadata = self.cache.get(metadata_key, {'entries': [], 'counter': 0})
         entries = metadata['entries']
@@ -67,16 +67,28 @@ class FileHistoryManager:
         if not entries:
             return None
 
-        # Get the last entry without removing it
-        last_counter = entries[-1]
+        # Pop and remove the last entry
+        last_counter = entries.pop()
         history_key = self._get_history_key(file_path, last_counter)
         content = self.cache.get(history_key)
 
         if content is None:
             self.logger.warning(f'History entry not found for {file_path}')
-            return None
+        else:
+            # Remove the entry from the cache
+            self.cache.delete(history_key)
+
+        # Update metadata
+        metadata['entries'] = entries
+        self.cache.set(metadata_key, metadata)
 
         return content
+
+    def get_metadata(self, file_path: Path):
+        """Get metadata for a file (for testing purposes)."""
+        metadata_key = self._get_metadata_key(file_path)
+        metadata = self.cache.get(metadata_key, {'entries': [], 'counter': 0})
+        return metadata  # Return the actual metadata, not a copy
 
     def clear_history(self, file_path: Path):
         """Clear history for a given file."""
@@ -105,8 +117,3 @@ class FileHistoryManager:
                 history.append(content)
 
         return history
-
-    def get_metadata(self, file_path: Path):
-        """Get metadata for a file (for testing purposes)."""
-        metadata_key = self._get_metadata_key(file_path)
-        return self.cache.get(metadata_key, {'entries': [], 'counter': 0})
