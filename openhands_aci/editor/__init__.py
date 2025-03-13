@@ -2,13 +2,23 @@ import json
 import uuid
 
 from .editor import Command, OHEditor
+from .encoding import EncodingManager, with_encoding
 from .exceptions import ToolError
 from .file_cache import FileCache
 from .results import ToolResult
 
 _GLOBAL_EDITOR = OHEditor()
 
-__all__ = ['Command', 'OHEditor', 'ToolError', 'ToolResult', 'FileCache', 'file_editor']
+__all__ = [
+    'Command',
+    'OHEditor',
+    'ToolError',
+    'ToolResult',
+    'FileCache',
+    'file_editor',
+    'EncodingManager',
+    'with_encoding',
+]
 
 
 def _make_api_tool_result(tool_result: ToolResult) -> str:
