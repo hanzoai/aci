@@ -35,7 +35,7 @@ def test_init(encoding_manager):
     assert isinstance(encoding_manager, EncodingManager)
     assert isinstance(encoding_manager._encoding_cache, LRUCache)
     assert encoding_manager.default_encoding == 'utf-8'
-    assert encoding_manager.confidence_threshold == 0.7
+    assert encoding_manager.confidence_threshold == 0.9
 
 
 def test_detect_encoding_nonexistent_file(encoding_manager):
@@ -55,6 +55,16 @@ def test_detect_encoding_utf8(encoding_manager, temp_file):
     assert encoding.lower() in ('utf-8', 'ascii')
 
 
+def test_detect_encoding_utf8_with_icon(encoding_manager, temp_file):
+    """Test detecting UTF-8 encoding with a word and an emoji."""
+    # Create a UTF-8 encoded file with a single word and an emoji
+    with open(temp_file, 'w', encoding='utf-8') as f:
+        f.write('Hello 😊')
+
+    encoding = encoding_manager.detect_encoding(temp_file)
+    assert encoding.lower() == 'utf-8'
+
+
 def test_detect_encoding_cp1251(encoding_manager, temp_file):
     """Test detecting CP1251 encoding."""
     # Create a CP1251 encoded file with Cyrillic characters
@@ -72,7 +82,10 @@ def test_detect_encoding_low_confidence(encoding_manager, temp_file):
         f.write(b'\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f')
 
     # Mock chardet.detect to return low confidence
-    with patch('chardet.detect', return_value={'encoding': 'ascii', 'confidence': 0.3}):
+    with patch(
+        'charset_normalizer.detect',
+        return_value={'encoding': 'ascii', 'confidence': 0.3},
+    ):
         encoding = encoding_manager.detect_encoding(temp_file)
         assert encoding == encoding_manager.default_encoding
 
@@ -83,7 +96,9 @@ def test_detect_encoding_none_result(encoding_manager, temp_file):
         f.write(b'\x00\x01\x02\x03')  # Binary data
 
     # Mock chardet.detect to return None for encoding
-    with patch('chardet.detect', return_value={'encoding': None, 'confidence': 0.0}):
+    with patch(
+        'charset_normalizer.detect', return_value={'encoding': None, 'confidence': 0.0}
+    ):
         encoding = encoding_manager.detect_encoding(temp_file)
         assert encoding == encoding_manager.default_encoding
 
