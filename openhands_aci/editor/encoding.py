@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from typing import Tuple
 
-import chardet
+import charset_normalizer
 from cachetools import LRUCache
 
 
@@ -24,14 +24,12 @@ class EncodingManager:
         # Default fallback encoding
         self.default_encoding = 'utf-8'
         # Confidence threshold for encoding detection
-        self.confidence_threshold = 0.7
+        self.confidence_threshold = 0.9
 
     def detect_encoding(self, path: Path) -> str:
         """Detect the encoding of a file without handling caching logic.
-
         Args:
             path: Path to the file
-
         Returns:
             The detected encoding or default encoding if detection fails
         """
@@ -44,28 +42,25 @@ class EncodingManager:
         with open(path, 'rb') as f:
             raw_data = f.read(sample_size)
 
-        result = chardet.detect(raw_data)
+        # Use charset_normalizer instead of chardet
+        results = charset_normalizer.detect(raw_data)
 
-        # Use detected encoding if confidence is high enough, otherwise fallback
-        encoding = (
-            result['encoding']
-            if (result['encoding'] and result['confidence'] > self.confidence_threshold)
-            else self.default_encoding
-        )
+        # Get the best match if any exists
+        if results and results['confidence'] > self.confidence_threshold:
+            encoding = results['encoding']
+        else:
+            encoding = self.default_encoding
 
         return encoding
 
     def get_encoding(self, path: Path) -> str:
         """Get encoding for a file, using cache or detecting if necessary.
-
         Args:
             path: Path to the file
-
         Returns:
             The encoding for the file
         """
         path_str = str(path)
-
         # If file doesn't exist, return default encoding
         if not path.exists():
             return self.default_encoding
@@ -89,13 +84,10 @@ class EncodingManager:
 
 def with_encoding(method):
     """Decorator to handle file encoding for file operations.
-
     This decorator automatically detects and applies the correct encoding
     for file operations, ensuring consistency between read and write operations.
-
     Args:
         method: The method to decorate
-
     Returns:
         The decorated method
     """
@@ -114,7 +106,6 @@ def with_encoding(method):
         else:
             # Get encoding from the encoding manager for existing files
             encoding = self._encoding_manager.get_encoding(path)
-
             # Add encoding to kwargs if the method accepts it
             if 'encoding' not in kwargs:
                 kwargs['encoding'] = encoding
