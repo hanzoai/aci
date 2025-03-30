@@ -2,6 +2,38 @@
 
 Hanzo ACI is a lightweight, cross-platform library that provides a consistent interface for AI assistants to interact with your computer. It's designed to be used with tools like Hanzo MCP and Claude Code, providing a unified way to perform operations like file manipulation, application control, and system automation.
 
+## Architecture
+
+```
+┌───────────────────────────────────────────────────────────┐
+│                       AI Assistant                        │
+└───────────────────────────┬───────────────────────────────┘
+                            │
+                            ▼
+┌───────────────────────────────────────────────────────────┐
+│                       Hanzo ACI                           │
+│                                                           │
+│  ┌───────────────┐    ┌───────────────┐    ┌───────────┐  │
+│  │ Interface API │◄───┤Concrete Impl. │───►│Permissions│  │
+│  └───────────────┘    └───────┬───────┘    └───────────┘  │
+│                              │                            │
+│  ┌─────────────┐  ┌──────────┴──────────┐  ┌───────────┐  │
+│  │Native Backend│◄─┤   Backend Router   ├──►│MCP Backend│  │
+│  └─────────────┘  └──────────┬──────────┘  └───────────┘  │
+│                              │                            │
+│                              │                            │
+│                     ┌────────┴─────────┐                 │
+│                     │ Claude Code Backend│                 │
+│                     └──────────────────┘                 │
+└───────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌───────────────────────────────────────────────────────────┐
+│                   Computer Resources                      │
+│   Files │ Applications │ Clipboard │ Shell │ Screenshots  │
+└───────────────────────────────────────────────────────────┘
+```
+
 ## Features
 
 - **Unified Computer Interface**: Access computer capabilities through a consistent API
