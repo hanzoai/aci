@@ -1,7 +1,8 @@
 """Concrete implementation of the Computer Interface.
 
 This module provides a concrete implementation of the Computer Interface that
-delegates operations to the appropriate backend based on availability.
+uses direct system calls to interact with the computer, with support for
+MCP, Claude Code, and Hanzo Dev tool backends.
 """
 
 import os
@@ -16,6 +17,7 @@ logger = logging.getLogger(__name__)
 # Lazy imports to avoid dependency issues
 _mcp_computer = None
 _claude_code_computer = None
+_dev_computer = None
 
 
 def _get_mcp_computer():
@@ -44,6 +46,19 @@ def _get_claude_code_computer():
     return _claude_code_computer
 
 
+def _get_dev_computer():
+    """Get the Hanzo Dev computer interface."""
+    global _dev_computer
+    if _dev_computer is None:
+        try:
+            from hanzo_aci.integrations.dev import DevComputerInterface, dev_computer
+            _dev_computer = dev_computer
+        except ImportError:
+            logger.debug("Hanzo Dev integration not available")
+            _dev_computer = None
+    return _dev_computer
+
+
 class ConcreteComputerInterface(ComputerInterface):
     """Concrete implementation of the computer interface.
     
@@ -59,7 +74,7 @@ class ConcreteComputerInterface(ComputerInterface):
         """Initialize the concrete computer interface.
         
         Args:
-            backend: Optional backend to use ('native', 'mcp', or 'claude_code').
+            backend: Optional backend to use ('native', 'mcp', 'claude_code', or 'dev').
                 If not specified, it will try to use the best available backend.
             native_interface: Optional native interface to use. If not specified,
                 the default native interface will be used.
@@ -90,6 +105,12 @@ class ConcreteComputerInterface(ComputerInterface):
                     return claude_code
                 logger.warning("Claude Code backend requested but not available, falling back to native")
                 return self.native_interface
+            elif self.backend == "dev":
+                dev = _get_dev_computer()
+                if dev and await dev.is_available():
+                    return dev
+                logger.warning("Hanzo Dev backend requested but not available, falling back to native")
+                return self.native_interface
             else:
                 logger.warning(f"Unknown backend: {self.backend}, falling back to native")
                 return self.native_interface
@@ -99,6 +120,11 @@ class ConcreteComputerInterface(ComputerInterface):
         mcp = _get_mcp_computer()
         if mcp and await mcp.is_available():
             return mcp
+        
+        # Then, try Dev
+        dev = _get_dev_computer()
+        if dev and await dev.is_available():
+            return dev
         
         # Then, try Claude Code
         claude_code = _get_claude_code_computer()
@@ -144,6 +170,8 @@ class ConcreteComputerInterface(ComputerInterface):
                 capabilities["backend"] = "mcp"
             elif "claude_code" in backend_module:
                 capabilities["backend"] = "claude_code"
+            elif "dev" in backend_module:
+                capabilities["backend"] = "dev"
             else:
                 capabilities["backend"] = "unknown"
         

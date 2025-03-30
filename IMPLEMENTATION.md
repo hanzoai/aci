@@ -4,103 +4,120 @@ This document provides an overview of the Hanzo ACI (Abstract Computer Interface
 
 ## Overview
 
-Hanzo ACI is designed to provide a unified interface for AI assistants to interact with the computer. It supports multiple backends, including:
+Hanzo ACI is designed as a foundational library that provides comprehensive computer interaction capabilities. It serves as the underlying layer for both Hanzo MCP and Hanzo Code, allowing AI assistants to interact with the computer in a controlled and secure manner.
 
-1. **Native Backend**: Direct system calls for computer operations
-2. **MCP Backend**: Integration with Hanzo MCP for server-based operations
-3. **Claude Code Backend**: Integration with Claude Code CLI for AI-assisted operations
-
-The library is designed to be easy to use, with a clean API that abstracts away the details of the underlying implementation.
+The key architectural principle is that ACI is the core component that implements direct computer interaction, while MCP and Code act as consumers of this functionality.
 
 ## Key Components
 
-### 1. Interface Definition
+### 1. Core Computer Interface
 
-The core of the library is the `ComputerInterface` abstract base class in `hanzo_aci/interface.py`. This defines the API that all backends must implement, including:
+The `ComputerInterface` abstract base class in `hanzo_aci/interface.py` defines the fundamental API that all computer operations must implement, including:
 
 - File operations (read, write, list)
 - Command execution
 - Application control
 - Clipboard management
 - Screenshot capturing
+- Vector storage and search
+- Symbol and code analysis
+- Project analysis
 
-### 2. Backend Implementations
+### 2. Advanced Features
 
-- **Native Backend** (`hanzo_aci/tools/native.py`): Direct system calls for operations
-- **MCP Backend** (`hanzo_aci/integrations/mcp.py`): Integration with Hanzo MCP
-- **Claude Code Backend** (`hanzo_aci/integrations/claude_code.py`): Integration with Claude Code
+ACI includes advanced features that were previously in MCP:
 
-### 3. Concrete Implementation
+- **Vector Database**: Embedding and retrieval of code and content
+- **Symbolic Search**: Code structure analysis and symbol search
+- **Project Analysis**: Code dependency and structure analysis
+- **Jupyter Tools**: Notebook operations and execution
+- **Browser Tools**: Web automation capabilities
 
-The `ConcreteComputerInterface` in `hanzo_aci/concrete.py` provides a high-level implementation that:
+### 3. Implementation Layers
 
-- Automatically selects the best available backend
-- Provides a unified API for all operations
-- Handles fallbacks when preferred backends are not available
+The implementation follows a layered approach:
 
-### 4. CLI Tool
+- **Core Interface**: Defines the API contract
+- **Native Implementation**: Direct system calls for operations
+- **Permission System**: Security layer for controlled access
+- **Specialized Tools**: Implements advanced features
 
-The `hanzo-aci` command-line tool in `hanzo_aci/cli.py` provides:
+## Consumer Applications
 
-- Direct access to computer operations
-- A stdio mode for integration with AI assistants
-- Backend selection and configuration
+### Hanzo MCP (Meta Context Protocol)
+
+MCP is refactored to be a meta-protocol that uses ACI for computer interactions. This simplifies MCP to focus on:
+
+- Protocol management
+- Server orchestration
+- Tool registry and discovery
+- API interfaces for AI assistants
+
+### Hanzo Code
+
+The Hanzo Code CLI tool uses ACI directly to:
+
+- Edit files on the computer
+- Execute commands
+- Control applications
+- Leverage advanced features like vector search
 
 ## Integration Approaches
 
-### With MCP
+### ACI Usage in MCP
 
-The MCP integration works by connecting to the computer-use MCP server, which provides:
+MCP imports ACI and uses it for:
 
-- Server management (start, stop, restart)
-- Tool discovery and execution
-- Consistent error handling
+- File operations through the `dev` tool
+- Computer interface through the `computer_use` tool
+- Vector storage and search capabilities
+- Code analysis and symbolic search
 
-### With Claude Code
+### ACI Usage in Hanzo Code
 
-The Claude Code integration works by executing the Claude Code CLI with:
+Hanzo Code imports ACI directly to:
 
-- Natural language commands for operations
-- JSON parsing for structured responses
-- Temporary file handling for complex operations
+- Edit files on the local system
+- Execute commands
+- Control applications
+- Access advanced analysis features
 
-### With AI Assistants
+### Independent ACI Usage
 
-AI assistants can use Hanzo ACI in several ways:
+ACI can also be used independently by:
 
-1. **Direct Python API**: Import and use the library in Python code
-2. **CLI Tool**: Execute `hanzo-aci` commands from a subprocess
-3. **Stdio Interface**: Use the stdio mode for a JSON-based protocol
+- AI assistants that need direct computer access
+- Development tools that need computer interaction
+- Testing and automation frameworks
 
-## Examples
+## Testing Strategy
 
-The repository includes several examples:
+The testing approach for ACI includes:
 
-- **Getting Started** (`examples/getting_started.py`): Basic usage of the API
-- **Basic Usage** (`examples/basic_usage.py`): More detailed API usage
-- **Integration Example** (`examples/integration_example.py`): A complete AI assistant example
+1. **Unit Tests**: For individual components and features
+2. **Integration Tests**: For interactions between features
+3. **System Tests**: For end-to-end workflows
+4. **Consumer Tests**: For MCP and Code integration
 
-## Future Improvements
+## Security Considerations
 
-Future versions of Hanzo ACI could include:
+Security is a primary concern, with several layers of protection:
 
-1. **More Backends**: Support for additional platforms and tools
-2. **Enhanced Security**: More granular permission controls
-3. **GUI Integration**: Direct interaction with graphical interfaces
-4. **Remote Operations**: Support for remote computers
-5. **Extended Capabilities**: More advanced computer operations
+1. **Permission System**: Granular control over allowed operations
+2. **Path Validation**: Prevention of path traversal attacks
+3. **Command Sanitization**: Safe execution of shell commands
+4. **Content Validation**: Checking file content before operations
 
-## Integration with Claude Desktop and MCP
+## Future Directions
 
-The library is designed to work seamlessly with both Claude Desktop and Hanzo MCP:
+Future development of ACI could include:
 
-- **Claude Desktop**: Uses the stdio interface for JSON-based communication
-- **Hanzo MCP**: Uses the MCP server for computer operations
+1. **Expanded Integration**: Support for more AI platforms
+2. **Remote Computer Control**: Network-based computer interaction
+3. **Enhanced Security**: More sophisticated permission models
+4. **Performance Optimization**: Faster operations for large projects
+5. **UI Interaction**: More sophisticated GUI automation
 
-This creates a complete ecosystem for AI-assisted development, where:
+## Conclusion
 
-1. Claude Desktop provides the AI assistant interface
-2. Hanzo MCP provides the server infrastructure
-3. Hanzo ACI provides the unified computer interface
-
-Together, these tools enable powerful AI-assisted development workflows that can interact with the computer in a safe and controlled way.
+Hanzo ACI provides a solid foundation for computer interaction capabilities, with MCP and Hanzo Code building upon this foundation to deliver their respective functionality. This architecture ensures a clean separation of concerns, with ACI handling the direct computer interaction while the consuming applications focus on their specific use cases.

@@ -1,6 +1,7 @@
 """Core interface definition for Hanzo ACI.
 
-This module defines the abstract base class for all computer interface implementations.
+This module defines the abstract base class for computer interface implementations.
+It serves as the foundation for all interactions with the computer system.
 """
 
 import os
@@ -168,6 +169,163 @@ class ComputerInterface(ABC):
             params={"text": text}
         )
     
+    # Project Analysis
+    
+    async def analyze_project(self, project_dir: str) -> Dict[str, Any]:
+        """Analyze a project directory structure and dependencies.
+        
+        Args:
+            project_dir: Path to the project directory
+            
+        Returns:
+            Dictionary with project analysis results
+        """
+        return await self.execute_operation(
+            operation="analyze_project",
+            params={"project_dir": project_dir}
+        )
+    
+    # Vector Operations
+    
+    async def vector_search(self, query_text: str, project_dir: str, n_results: int = 10) -> Dict[str, Any]:
+        """Search the vector store for similar content.
+        
+        Args:
+            query_text: The text to search for
+            project_dir: The project directory containing the vector store
+            n_results: Maximum number of results to return
+            
+        Returns:
+            Dictionary with search results
+        """
+        return await self.execute_operation(
+            operation="vector_search",
+            params={
+                "query_text": query_text,
+                "project_dir": project_dir,
+                "n_results": n_results
+            }
+        )
+    
+    async def vector_index(self, path: str, recursive: bool = True) -> Dict[str, Any]:
+        """Index a file or directory in the vector store.
+        
+        Args:
+            path: Path to the file or directory to index
+            recursive: Whether to recursively index directories
+            
+        Returns:
+            Dictionary with indexing results
+        """
+        return await self.execute_operation(
+            operation="vector_index",
+            params={
+                "path": path,
+                "recursive": recursive
+            }
+        )
+    
+    # Symbol Operations
+    
+    async def symbol_find(self, path: str, symbol_name: Optional[str] = None) -> Dict[str, Any]:
+        """Find symbols in a file or directory.
+        
+        Args:
+            path: Path to file or directory
+            symbol_name: Optional name of symbol to find
+            
+        Returns:
+            Dictionary with found symbols
+        """
+        params = {"path": path}
+        if symbol_name:
+            params["symbol_name"] = symbol_name
+        return await self.execute_operation(
+            operation="symbol_find",
+            params=params
+        )
+    
+    async def symbol_search(self, pattern: str, path: str) -> Dict[str, Any]:
+        """Search for symbols matching a pattern.
+        
+        Args:
+            pattern: Pattern to search for
+            path: Path to search in
+            
+        Returns:
+            Dictionary with matching symbols
+        """
+        return await self.execute_operation(
+            operation="symbol_search",
+            params={
+                "pattern": pattern,
+                "path": path
+            }
+        )
+    
+    # Jupyter Operations
+    
+    async def jupyter_read(self, path: str) -> Dict[str, Any]:
+        """Read a Jupyter notebook.
+        
+        Args:
+            path: Path to the notebook
+            
+        Returns:
+            Dictionary with notebook content
+        """
+        return await self.execute_operation(
+            operation="jupyter_read",
+            params={"path": path}
+        )
+    
+    async def jupyter_edit(self, path: str, cell_number: int, new_source: str) -> Dict[str, Any]:
+        """Edit a cell in a Jupyter notebook.
+        
+        Args:
+            path: Path to the notebook
+            cell_number: Number of the cell to edit
+            new_source: New source code for the cell
+            
+        Returns:
+            Dictionary with edit results
+        """
+        return await self.execute_operation(
+            operation="jupyter_edit",
+            params={
+                "path": path,
+                "cell_number": cell_number,
+                "new_source": new_source
+            }
+        )
+    
+    # Browser Operations
+    
+    async def browser_navigate(self, url: str) -> Dict[str, Any]:
+        """Navigate to a URL in the browser.
+        
+        Args:
+            url: URL to navigate to
+            
+        Returns:
+            Dictionary with navigation results
+        """
+        return await self.execute_operation(
+            operation="browser_navigate",
+            params={"url": url}
+        )
+    
+    async def browser_screenshot(self) -> Dict[str, Any]:
+        """Take a screenshot of the browser window.
+        
+        Returns:
+            Dictionary with screenshot results
+        """
+        return await self.execute_operation(
+            operation="browser_screenshot",
+            params={}
+        )
+        
     # Environment Operations
     
     async def get_environment_variables(self) -> Dict[str, Any]:
