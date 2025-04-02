@@ -555,8 +555,14 @@ class OHEditor:
                 reason=f'File is too large ({file_size / 1024 / 1024:.1f}MB). Maximum allowed size is {int(max_size / 1024 / 1024)}MB.',
             )
 
+        # Known file extensions that are binary, but may not be detected by is_binary
+        binary_extensions = [
+            '.pdf',
+        ]
+        is_definitely_binary = path.suffix.lower() in binary_extensions
+
         # Check file type
-        if is_binary(str(path)):
+        if is_definitely_binary or is_binary(str(path)):
             raise FileValidationError(
                 path=str(path),
                 reason='File appears to be binary. Only text files can be edited.',
