@@ -208,37 +208,61 @@ async def test_get_capabilities():
         assert result["available"] is True
         assert result["backend"] == "native"
     
-    # Test with MCP interface
-    with patch.object(interface, "_select_backend", return_value=mock_backend):
-        with patch("hanzo_aci.concrete.isinstance", return_value=False):
-            with patch.object(mock_backend, "__class__", __module__="hanzo_aci.integrations.mcp"):
-                result = await interface.get_capabilities()
-                assert result["available"] is True
-                assert result["backend"] == "mcp"
+    # Test with MCP interface - FIX: Create a proper mock with the required module
+    mcp_mock = AsyncMock()
+    mcp_mock.get_capabilities.return_value = {
+        "available": True,
+        "capabilities": ["test_capability"]
+    }
+    mcp_mock.__class__.__module__ = "hanzo_aci.integrations.mcp"
     
-    # Test with Dev interface
-    with patch.object(interface, "_select_backend", return_value=mock_backend):
+    with patch.object(interface, "_select_backend", return_value=mcp_mock):
         with patch("hanzo_aci.concrete.isinstance", return_value=False):
-            with patch.object(mock_backend, "__class__", __module__="hanzo_aci.integrations.dev"):
-                result = await interface.get_capabilities()
-                assert result["available"] is True
-                assert result["backend"] == "dev"
+            result = await interface.get_capabilities()
+            assert result["available"] is True
+            assert result["backend"] == "mcp"
     
-    # Test with Claude Code interface
-    with patch.object(interface, "_select_backend", return_value=mock_backend):
-        with patch("hanzo_aci.concrete.isinstance", return_value=False):
-            with patch.object(mock_backend, "__class__", __module__="hanzo_aci.integrations.claude_code"):
-                result = await interface.get_capabilities()
-                assert result["available"] is True
-                assert result["backend"] == "claude_code"
+    # Test with Dev interface - FIX: Create a proper mock with the required module
+    dev_mock = AsyncMock()
+    dev_mock.get_capabilities.return_value = {
+        "available": True,
+        "capabilities": ["test_capability"]
+    }
+    dev_mock.__class__.__module__ = "hanzo_aci.integrations.dev"
     
-    # Test with unknown interface
-    with patch.object(interface, "_select_backend", return_value=mock_backend):
+    with patch.object(interface, "_select_backend", return_value=dev_mock):
         with patch("hanzo_aci.concrete.isinstance", return_value=False):
-            with patch.object(mock_backend, "__class__", __module__="unknown"):
-                result = await interface.get_capabilities()
-                assert result["available"] is True
-                assert result["backend"] == "unknown"
+            result = await interface.get_capabilities()
+            assert result["available"] is True
+            assert result["backend"] == "dev"
+    
+    # Test with Claude Code interface - FIX: Create a proper mock with the required module
+    claude_mock = AsyncMock()
+    claude_mock.get_capabilities.return_value = {
+        "available": True,
+        "capabilities": ["test_capability"]
+    }
+    claude_mock.__class__.__module__ = "hanzo_aci.integrations.claude_code"
+    
+    with patch.object(interface, "_select_backend", return_value=claude_mock):
+        with patch("hanzo_aci.concrete.isinstance", return_value=False):
+            result = await interface.get_capabilities()
+            assert result["available"] is True
+            assert result["backend"] == "claude_code"
+    
+    # Test with unknown interface - FIX: Create a proper mock with the required module
+    unknown_mock = AsyncMock()
+    unknown_mock.get_capabilities.return_value = {
+        "available": True,
+        "capabilities": ["test_capability"]
+    }
+    unknown_mock.__class__.__module__ = "unknown"
+    
+    with patch.object(interface, "_select_backend", return_value=unknown_mock):
+        with patch("hanzo_aci.concrete.isinstance", return_value=False):
+            result = await interface.get_capabilities()
+            assert result["available"] is True
+            assert result["backend"] == "unknown"
 
 
 @pytest.mark.asyncio
@@ -272,33 +296,40 @@ async def test_backend_unavailable_fallback():
 async def test_helper_methods_delegation():
     """Test helper methods delegate to execute_operation."""
     interface = ConcreteComputerInterface()
-    mock_execute = AsyncMock(return_value={"success": True})
+    # FIX: Use the correct argument style for the mock
+    mock_execute = AsyncMock()
     
     with patch.object(interface, "execute_operation", mock_execute):
         # Test list_files
         await interface.list_files("/path")
-        mock_execute.assert_called_with("list_files", {"path": "/path"})
+        # FIX: Check for keyword arguments instead of positional arguments
+        assert mock_execute.call_args.kwargs['operation'] == "list_files"
+        assert mock_execute.call_args.kwargs['params'] == {"path": "/path"}
         mock_execute.reset_mock()
         
         # Test read_file
         await interface.read_file("/path/file.txt")
-        mock_execute.assert_called_with("read_file", {"path": "/path/file.txt"})
+        assert mock_execute.call_args.kwargs['operation'] == "read_file"
+        assert mock_execute.call_args.kwargs['params'] == {"path": "/path/file.txt"}
         mock_execute.reset_mock()
         
         # Test write_file
         await interface.write_file("/path/file.txt", "content")
-        mock_execute.assert_called_with("write_file", {"path": "/path/file.txt", "content": "content"})
+        assert mock_execute.call_args.kwargs['operation'] == "write_file"
+        assert mock_execute.call_args.kwargs['params'] == {"path": "/path/file.txt", "content": "content"}
         mock_execute.reset_mock()
         
         # Test run_command
         await interface.run_command("ls -la", "/path")
-        mock_execute.assert_called_with("run_command", {"command": "ls -la", "cwd": "/path"})
+        assert mock_execute.call_args.kwargs['operation'] == "run_command"
+        assert mock_execute.call_args.kwargs['params'] == {"command": "ls -la", "cwd": "/path"}
         mock_execute.reset_mock()
         
         # Test vector_search
         await interface.vector_search("query", "/project", 5)
-        mock_execute.assert_called_with("vector_search", {
+        assert mock_execute.call_args.kwargs['operation'] == "vector_search"
+        assert mock_execute.call_args.kwargs['params'] == {
             "query_text": "query", 
             "project_dir": "/project", 
             "n_results": 5
-        })
+        }

@@ -3,7 +3,7 @@
 import os
 import pytest
 import tempfile
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, AsyncMock
 
 from hanzo_aci.integrations.dev import DevComputerInterface, DevManager
 
@@ -14,7 +14,11 @@ def mock_dev_manager():
     manager = MagicMock(spec=DevManager)
     manager.is_available = True
     manager.get_dev_module.return_value = MagicMock()
-    manager.initialize_dev.return_value = {"success": True, "message": "Initialized"}
+    
+    # FIX: Make initialize_dev an async method by using AsyncMock 
+    async_initialize = AsyncMock(return_value={"success": True, "message": "Initialized"})
+    manager.initialize_dev = async_initialize
+    
     return manager
 
 
@@ -41,7 +45,7 @@ async def test_is_available(dev_interface, mock_dev_manager):
 @pytest.mark.asyncio
 async def test_ensure_running(dev_interface, mock_dev_manager):
     """Test ensuring that the interface is running."""
-    mock_dev_manager.initialize_dev = MagicMock(return_value={"success": True, "message": "Initialized"})
+    # FIX: Already fixed in the fixture with AsyncMock
     
     result = await dev_interface.ensure_running()
     assert result["success"] is True

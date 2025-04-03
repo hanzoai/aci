@@ -60,7 +60,10 @@ class DevManager:
         return self._dev_module
     
     async def initialize_dev(self) -> Dict[str, Any]:
-        """Initialize the dev module."""
+        """Initialize the dev module.
+        
+        FIX: Changed to async method to match awaitable usage in the interface
+        """
         if not self.is_available:
             return {"success": False, "error": "Dev module not available"}
         
@@ -107,6 +110,7 @@ class DevComputerInterface(ComputerInterface):
                 "error": "Dev module not available"
             }
             
+        # FIX: Use await on initialize_dev (now an async method)
         return await self.manager.initialize_dev()
     
     async def get_capabilities(self) -> Dict[str, Any]:

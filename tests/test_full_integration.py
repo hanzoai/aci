@@ -75,6 +75,10 @@ async def test_mcp_computer_interface():
     
     # Create mock MCP server manager
     mock_manager = MagicMock(spec=MCPServerManager)
+    
+    # Fix: Add the servers attribute to the mock manager
+    mock_manager.servers = {"computer-use": MagicMock()}
+    
     mock_manager.is_server_running.return_value = True
     mock_manager.get_server.return_value = MagicMock()
     
@@ -238,6 +242,8 @@ async def test_mcp_aci_dev_integration():
     
     # Create mock MCP server manager
     mock_mcp_manager = MagicMock(spec=MCPServerManager)
+    # Fix: Add the servers attribute to the mock manager
+    mock_mcp_manager.servers = {"computer-use": MagicMock()}
     mock_mcp_manager.is_server_running.return_value = True
     mock_mcp_manager.get_server.return_value = MagicMock()
     
