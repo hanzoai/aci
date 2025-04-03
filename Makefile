@@ -12,7 +12,7 @@ BLUE=$(shell tput -Txterm setaf 6)
 RESET=$(shell tput -Txterm sgr0)
 
 # Variables
-PYTHON_VERSION = 3.10
+PYTHON_VERSION = 3.12
 VENV_NAME ?= .venv
 SRC_DIR = hanzo_aci
 TEST_DIR = tests

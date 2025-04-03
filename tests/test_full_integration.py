@@ -131,10 +131,11 @@ async def test_vector_search_interface():
     except ImportError:
         pytest.skip("Vector search not available")
     
-    # Patch the dependency check
-    with patch("hanzo_aci.specialized.vector_search._is_vectordb_available", return_value=True):
-        # Create a vector search interface
-        interface = VectorSearchInterface()
+    # Create a vector search interface
+    interface = VectorSearchInterface()
+    
+    # Patch the instance's availability attribute directly
+    with patch.object(interface, "_available", True):
         
         # Mock the client and collection
         mock_client = MagicMock()
@@ -178,10 +179,11 @@ async def test_symbolic_reasoning_interface():
     except ImportError:
         pytest.skip("Symbolic reasoning not available")
     
-    # Patch the dependency check
-    with patch("hanzo_aci.specialized.symbolic_reasoning._is_symbolic_available", return_value=True):
-        # Create a symbolic reasoning interface
-        interface = SymbolicReasoningInterface()
+    # Create a symbolic reasoning interface
+    interface = SymbolicReasoningInterface()
+    
+    # Patch the instance's availability attribute directly
+    with patch.object(interface, "_available", True):
         
         # Create a mock parser and language
         mock_parser = MagicMock()

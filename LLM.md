@@ -112,3 +112,22 @@ pip install 'hanzo-aci[symbolic]'   # Symbolic reasoning capabilities
 3. Create a more comprehensive integration with the Hanzo Dev codebase
 4. Add performance benchmarks and optimization
 5. Explore additional specialized modules for other AI capabilities
+
+## Recent Fixes
+
+1. **Fixed specialized interfaces tests**:
+   - Fixed issues where tests were trying to patch module-level functions incorrectly:
+     - `test_symbolic_reasoning_interface`: Fixed patching of `_is_symbolic_available`
+     - `test_vector_search_interface`: Fixed patching of `_is_vectordb_available`
+   - Updated the tests to directly patch the `_available` attribute on the interface instances instead
+   - This ensures that the mocks correctly affect the instances being tested
+
+2. **Fixed pytest configuration for asyncio tests**:
+   - Added `asyncio_default_fixture_loop_scope = "function"` to the pytest configuration in pyproject.toml
+   - This resolves a deprecation warning from pytest-asyncio
+   - Ensures that asyncio tests use a consistent loop scope for future pytest-asyncio versions
+
+3. **Environment setup**:
+   - Documented the need to install the package in a virtual environment with appropriate optional dependencies
+   - Fixed an issue where running tests outside a properly configured environment would lead to import errors
+   - Ensured that tests can run successfully with the correct dependencies installed
