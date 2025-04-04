@@ -27,7 +27,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-mcp = ["hanzo-mcp>=0.1.29"]
+mcp = []
+# The mcp dependency is intentionally left empty to avoid circular dependency
+# Users should install hanzo-mcp separately when needed
 
 # Dev tools and testing dependencies
 dev = [
@@ -40,7 +42,7 @@ dev = [
 
 # Hanzo Dev integration
 hanzo-dev = [
-    "dev-ai>=0.1.0",  # The Hanzo Dev package
+    "hanzo-dev>=0.1.0",  # The Hanzo Dev package
 ]
 
 # Vector database integration
@@ -73,7 +75,7 @@ parsers = [
 # All dependencies
 all = [
     "hanzo-mcp>=0.1.29",
-    "dev-ai>=0.1.0",
+    "hanzo-dev>=0.1.0",
     "chromadb>=0.4.0",
     "sentence-transformers>=2.2.0",
     "numpy>=1.24.0",
