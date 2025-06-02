@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openhands-aci"
-version = "0.2.15"
+version = "0.3.0"
 description = "An Agent-Computer Interface (ACI) designed for software development agents OpenHands."
 authors = ["OpenHands"]
 license = "MIT"
@@ -23,8 +23,23 @@ charset-normalizer = "^3.4.1"
 pydantic = "^2.11.3"
 libcst = "1.5.0"
 rapidfuzz = "^3.13.0"
+pandas = "*"
 matplotlib = "^3.10.3"
 networkx = "^3.4.2"
+beautifulsoup4 = ">=4.12.3"
+mammoth = ">=1.8.0"
+markdownify = ">=0.13.1"
+pdfminer-six = ">=20240706"
+puremagic = ">=1.28"
+pypdf = ">=5.1.0"
+python-pptx = "^1.0.2"
+requests = ">=2.32.3"
+youtube-transcript-api = ">=0.6.2"
+pydub = "^0.25.1"
+pypdf2 = "^3.0.1"
+xlrd = "^2.0.1"
+speechrecognition = "^3.14.1"
+openpyxl = "^3.1.5"
 
 # Optional dependencies for llama-index functionality
 llama-index = { version = "^0.12.29", optional = true }
