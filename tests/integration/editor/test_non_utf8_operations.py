@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from openhands_aci.editor import file_editor
-from openhands_aci.editor.encoding import EncodingManager
+from hanzo_aci.editor import file_editor
+from hanzo_aci.editor.encoding import EncodingManager
 
 from .conftest import parse_result
 

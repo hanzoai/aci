@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from openhands_aci.editor.editor import OHEditor
-from openhands_aci.editor.exceptions import EditorToolParameterInvalidError
+from hanzo_aci.editor.editor import OHEditor
+from hanzo_aci.editor.exceptions import EditorToolParameterInvalidError
 
 
 def test_workspace_root_as_cwd(tmp_path):

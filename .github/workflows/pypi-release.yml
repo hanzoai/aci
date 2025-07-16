@@ -1,4 +1,4 @@
-# Publishes the openhands-aci PyPi package
+# Publishes the hanzo-aci PyPi package
 name: Publish PyPi Package
 
 # Triggered manually

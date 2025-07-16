@@ -7,8 +7,8 @@ from typing import Literal, get_args
 
 from binaryornot.check import is_binary
 
-from openhands_aci.linter import DefaultLinter
-from openhands_aci.utils.shell import run_shell_cmd
+from hanzo_aci.linter import DefaultLinter
+from hanzo_aci.utils.shell import run_shell_cmd
 
 from .config import SNIPPET_CONTEXT_WINDOW
 from .encoding import EncodingManager, with_encoding

@@ -1,6 +1,6 @@
-# Agent-Computer Interface (ACI) for OpenHands
+# Agent-Computer Interface (ACI) for Hanzo
 
-An Agent-Computer Interface (ACI) designed for software development agents [OpenHands](https://github.com/All-Hands-AI/OpenHands). This package provides essential tools and interfaces for AI agents to interact with computer systems for software development tasks.
+An Agent-Computer Interface (ACI) designed for [Hanzo IDE](https://github.com/hanzoai/ide). This package provides essential tools and interfaces for AI agents to interact with computer systems for software development tasks.
 
 ## Features
 
@@ -21,19 +21,19 @@ An Agent-Computer Interface (ACI) designed for software development agents [Open
 ## Installation
 
 ```bash
-pip install openhands-aci
+pip install hanzo-aci
 ```
 
 Or using Poetry:
 
 ```bash
-poetry add openhands-aci
+poetry add hanzo-aci
 ```
 
 ## Project Structure
 
 ```
-openhands_aci/
+hanzo_aci/
 ├── editor/           # Code editing functionality
 ├── linter/           # Code linting capabilities
 └── utils/            # Utility functions
@@ -43,8 +43,8 @@ openhands_aci/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/All-Hands-AI/openhands-aci.git
-cd openhands-aci
+git clone https://github.com/hanzoai/aci.git
+cd aci
 ```
 
 2. Install development dependencies:

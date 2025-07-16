@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from unittest import mock
 
-from openhands_aci.editor.md_converter import (
+from hanzo_aci.editor.md_converter import (
     FlacConverter,
     M4aConverter,
     Mp3Converter,
@@ -100,7 +100,7 @@ class TestAudioConverters(unittest.TestCase):
 
     def test_mp3_converter_pydub_not_available(self):
         """Test that Mp3Converter handles the case when pydub is not available."""
-        with mock.patch('openhands_aci.editor.md_converter.pydub_available', False):
+        with mock.patch('hanzo_aci.editor.md_converter.pydub_available', False):
             converter = Mp3Converter()
             with tempfile.NamedTemporaryFile(suffix='.mp3') as temp_file:
                 result = converter.convert(temp_file.name, file_extension='.mp3')
@@ -112,7 +112,7 @@ class TestAudioConverters(unittest.TestCase):
 
     def test_m4a_converter_pydub_not_available(self):
         """Test that M4aConverter handles the case when pydub is not available."""
-        with mock.patch('openhands_aci.editor.md_converter.pydub_available', False):
+        with mock.patch('hanzo_aci.editor.md_converter.pydub_available', False):
             converter = M4aConverter()
             with tempfile.NamedTemporaryFile(suffix='.m4a') as temp_file:
                 result = converter.convert(temp_file.name, file_extension='.m4a')
@@ -124,7 +124,7 @@ class TestAudioConverters(unittest.TestCase):
 
     def test_flac_converter_pydub_not_available(self):
         """Test that FlacConverter handles the case when pydub is not available."""
-        with mock.patch('openhands_aci.editor.md_converter.pydub_available', False):
+        with mock.patch('hanzo_aci.editor.md_converter.pydub_available', False):
             converter = FlacConverter()
             with tempfile.NamedTemporaryFile(suffix='.flac') as temp_file:
                 result = converter.convert(temp_file.name, file_extension='.flac')
@@ -155,7 +155,7 @@ class TestAudioConverters(unittest.TestCase):
 
     def test_mp3_converter_pydub_none(self):
         """Test that Mp3Converter handles the case when pydub is None."""
-        with mock.patch('openhands_aci.editor.md_converter.pydub', None):
+        with mock.patch('hanzo_aci.editor.md_converter.pydub', None):
             converter = Mp3Converter()
             with tempfile.NamedTemporaryFile(suffix='.mp3') as temp_file:
                 result = converter.convert(temp_file.name, file_extension='.mp3')
@@ -167,7 +167,7 @@ class TestAudioConverters(unittest.TestCase):
 
     def test_m4a_converter_pydub_none(self):
         """Test that M4aConverter handles the case when pydub is None."""
-        with mock.patch('openhands_aci.editor.md_converter.pydub', None):
+        with mock.patch('hanzo_aci.editor.md_converter.pydub', None):
             converter = M4aConverter()
             with tempfile.NamedTemporaryFile(suffix='.m4a') as temp_file:
                 result = converter.convert(temp_file.name, file_extension='.m4a')
@@ -179,7 +179,7 @@ class TestAudioConverters(unittest.TestCase):
 
     def test_flac_converter_pydub_none(self):
         """Test that FlacConverter handles the case when pydub is None."""
-        with mock.patch('openhands_aci.editor.md_converter.pydub', None):
+        with mock.patch('hanzo_aci.editor.md_converter.pydub', None):
             converter = FlacConverter()
             with tempfile.NamedTemporaryFile(suffix='.flac') as temp_file:
                 result = converter.convert(temp_file.name, file_extension='.flac')

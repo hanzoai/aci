@@ -3,7 +3,7 @@ import tempfile
 
 import pytest
 
-from openhands_aci.editor import FileCache
+from hanzo_aci.editor import FileCache
 
 
 @pytest.fixture

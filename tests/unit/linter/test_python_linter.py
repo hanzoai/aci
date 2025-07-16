@@ -1,5 +1,5 @@
-from openhands_aci.linter import DefaultLinter, LintResult
-from openhands_aci.linter.impl.python import (
+from hanzo_aci.linter import DefaultLinter, LintResult
+from hanzo_aci.linter.impl.python import (
     PythonLinter,
     flake_lint,
     python_compile_lint,

@@ -1,5 +1,5 @@
-from openhands_aci.linter import DefaultLinter, LintResult
-from openhands_aci.utils.diff import get_diff, parse_diff
+from hanzo_aci.linter import DefaultLinter, LintResult
+from hanzo_aci.utils.diff import get_diff, parse_diff
 
 OLD_CONTENT = """
 def foo():

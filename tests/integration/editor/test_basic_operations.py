@@ -3,7 +3,7 @@
 import json
 import re
 
-from openhands_aci.editor import file_editor
+from hanzo_aci.editor import file_editor
 
 from .conftest import parse_result
 

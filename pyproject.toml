@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "openhands-aci"
+name = "hanzo-aci"
 version = "0.3.1"
-description = "An Agent-Computer Interface (ACI) designed for software development agents OpenHands."
-authors = ["OpenHands"]
+description = "An Agent-Computer Interface (ACI) designed for software development agents Hanzo."
+authors = ["Hanzo"]
 license = "MIT"
 readme = "README.md"
 packages = [
-  { include = "openhands_aci/**/*" }
+  { include = "hanzo_aci/**/*" }
 ]
 
 [tool.poetry.dependencies]

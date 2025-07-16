@@ -3,8 +3,8 @@ from pathlib import Path
 import pytest
 from binaryornot.check import is_binary
 
-from openhands_aci.editor.editor import OHEditor
-from openhands_aci.editor.exceptions import FileValidationError
+from hanzo_aci.editor.editor import OHEditor
+from hanzo_aci.editor.exceptions import FileValidationError
 
 
 def test_validate_large_file(tmp_path):

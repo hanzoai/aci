@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from unittest import mock
 
-from openhands_aci.editor.md_converter import Mp3Converter
+from hanzo_aci.editor.md_converter import Mp3Converter
 
 
 class TestMp3Converter(unittest.TestCase):
@@ -11,7 +11,7 @@ class TestMp3Converter(unittest.TestCase):
     def test_pydub_not_available(self):
         """Test that Mp3Converter handles the case when pydub is not available."""
         # Mock the pydub_available flag to be False
-        with mock.patch('openhands_aci.editor.md_converter.pydub_available', False):
+        with mock.patch('hanzo_aci.editor.md_converter.pydub_available', False):
             converter = Mp3Converter()
 
             # Create a temporary file with .mp3 extension
@@ -29,7 +29,7 @@ class TestMp3Converter(unittest.TestCase):
     def test_pydub_none(self):
         """Test that Mp3Converter handles the case when pydub is None."""
         # Mock pydub to be None
-        with mock.patch('openhands_aci.editor.md_converter.pydub', None):
+        with mock.patch('hanzo_aci.editor.md_converter.pydub', None):
             converter = Mp3Converter()
 
             # Create a temporary file with .mp3 extension
