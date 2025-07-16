@@ -4,12 +4,12 @@ type: repo
 agent: CodeActAgent
 ---
 
-This repository contains the Agent-Computer Interface (ACI) for OpenHands, providing essential tools and interfaces for AI agents to interact with computer systems for software development tasks. The core functionality is implemented in Python and includes code editing, linting, and utility functions.
+This repository contains the Agent-Computer Interface (ACI) for Hanzo, providing essential tools and interfaces for AI agents to interact with computer systems for software development tasks. The core functionality is implemented in Python and includes code editing, linting, and utility functions.
 
 ## General Setup:
 
 Before pushing any changes, ensure all checks pass:
-* Run pre-commit hooks: `pre-commit run --files openhands_aci/**/* tests/**/* --config ./dev_config/python/.pre-commit-config.yaml`
+* Run pre-commit hooks: `pre-commit run --files hanzo_aci/**/* tests/**/* --config ./dev_config/python/.pre-commit-config.yaml`
 * Run tests: `poetry run pytest`
 
 The pre-commit hooks include:
@@ -21,7 +21,7 @@ The pre-commit hooks include:
 
 ## Repository Structure
 Core Code:
-- Located in the `openhands_aci` directory
+- Located in the `hanzo_aci` directory
   - `editor/`: Code editing functionality
   - `linter/`: Code linting capabilities (tree-sitter based)
   - `utils/`: Utility functions (shell commands, diff generation, logging)

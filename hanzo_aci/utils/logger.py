@@ -7,7 +7,7 @@ DEBUG = os.getenv('DEBUG', 'False').lower() in ['true', '1', 'yes']
 if DEBUG:
     LOG_LEVEL = 'DEBUG'
 
-oh_aci_logger = logging.getLogger('openhands_aci')
+oh_aci_logger = logging.getLogger('hanzo_aci')
 
 current_log_level = logging.INFO
 if LOG_LEVEL in logging.getLevelNamesMapping():

@@ -1,4 +1,4 @@
-from openhands_aci.indexing.locagent.compress import get_skeleton
+from hanzo_aci.indexing.locagent.compress import get_skeleton
 
 
 def test_get_skeleton_keeps_constants():

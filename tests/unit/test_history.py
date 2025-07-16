@@ -3,7 +3,7 @@
 import tempfile
 from pathlib import Path
 
-from openhands_aci.editor.history import FileHistoryManager
+from hanzo_aci.editor.history import FileHistoryManager
 
 
 def test_default_history_limit():

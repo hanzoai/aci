@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from openhands_aci.editor.md_converter import MarkdownConverter
+from hanzo_aci.editor.md_converter import MarkdownConverter
 
 
 class TestAudioIntegration(unittest.TestCase):

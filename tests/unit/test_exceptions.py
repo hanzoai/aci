@@ -1,6 +1,6 @@
 import pytest
 
-from openhands_aci.editor.exceptions import (
+from hanzo_aci.editor.exceptions import (
     EditorToolParameterInvalidError,
     EditorToolParameterMissingError,
     ToolError,

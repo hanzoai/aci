@@ -4,7 +4,7 @@ try:
     import llama_index.core
     import llama_index.retrievers.bm25
 except ImportError:
-    raise ImportError("llama-index is required for these tools. Install with: pip install openhands-aci[llama]")
+    raise ImportError("llama-index is required for these tools. Install with: pip install hanzo-aci[llama]")
 
 import collections
 import json

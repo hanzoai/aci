@@ -1,5 +1,5 @@
-from openhands_aci.linter import DefaultLinter, LintResult
-from openhands_aci.linter.impl.treesitter import TreesitterBasicLinter
+from hanzo_aci.linter import DefaultLinter, LintResult
+from hanzo_aci.linter.impl.treesitter import TreesitterBasicLinter
 
 
 def test_syntax_error_py_file(syntax_error_py_file):

@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from openhands_aci.editor.editor import OHEditor
-from openhands_aci.editor.results import CLIResult
+from hanzo_aci.editor.editor import OHEditor
+from hanzo_aci.editor.results import CLIResult
 
 
 def test_view_pdf_file():

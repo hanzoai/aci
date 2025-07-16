@@ -1,7 +1,7 @@
 from typing import List
 
-from openhands_aci.utils.logger import oh_aci_logger as logger
-from openhands_aci.utils.shell import run_shell_cmd
+from hanzo_aci.utils.logger import oh_aci_logger as logger
+from hanzo_aci.utils.shell import run_shell_cmd
 
 from ..base import BaseLinter, LintResult
 

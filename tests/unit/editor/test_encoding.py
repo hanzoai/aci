@@ -9,7 +9,7 @@ from unittest.mock import patch
 import pytest
 from cachetools import LRUCache
 
-from openhands_aci.editor.encoding import EncodingManager, with_encoding
+from hanzo_aci.editor.encoding import EncodingManager, with_encoding
 
 
 @pytest.fixture

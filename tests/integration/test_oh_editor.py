@@ -2,17 +2,17 @@ from pathlib import Path
 
 import pytest
 
-from openhands_aci.editor.editor import OHEditor
-from openhands_aci.editor.exceptions import (
+from hanzo_aci.editor.editor import OHEditor
+from hanzo_aci.editor.exceptions import (
     EditorToolParameterInvalidError,
     EditorToolParameterMissingError,
     ToolError,
 )
-from openhands_aci.editor.prompts import (
+from hanzo_aci.editor.prompts import (
     DIRECTORY_CONTENT_TRUNCATED_NOTICE,
     TEXT_FILE_CONTENT_TRUNCATED_NOTICE,
 )
-from openhands_aci.editor.results import CLIResult, ToolResult
+from hanzo_aci.editor.results import CLIResult, ToolResult
 
 
 @pytest.fixture

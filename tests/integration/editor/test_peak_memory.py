@@ -8,7 +8,7 @@ from pathlib import Path
 import psutil
 import pytest
 
-from openhands_aci.editor import file_editor
+from hanzo_aci.editor import file_editor
 
 # Skip all tests in this module on non-Unix platforms
 pytestmark = pytest.mark.skipif(
@@ -238,7 +238,7 @@ def test_large_history_insert():
     import logging
     import tempfile
 
-    from openhands_aci.editor.history import FileHistoryManager
+    from hanzo_aci.editor.history import FileHistoryManager
 
     # Set up logging
     logging.basicConfig(level=logging.ERROR)

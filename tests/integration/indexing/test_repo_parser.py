@@ -5,7 +5,7 @@ import tempfile
 
 import pytest
 
-from openhands_aci.indexing.locagent.repo.chunk_index.code_retriever import (
+from hanzo_aci.indexing.locagent.repo.chunk_index.code_retriever import (
     build_code_retriever_from_repo as build_code_retriever,
 )
 

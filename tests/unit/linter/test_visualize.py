@@ -2,7 +2,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from openhands_aci.linter.base import LintResult
+from hanzo_aci.linter.base import LintResult
 
 
 @pytest.fixture
