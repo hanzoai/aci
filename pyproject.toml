@@ -9,6 +9,10 @@ packages = [
   { include = "hanzo_aci/**/*" }
 ]
 
+[tool.poetry.scripts]
+hanzo-dev = "hanzo_aci.cli:main"
+hanzo-dev-server = "hanzo_aci.server:run_server"
+
 [tool.poetry.dependencies]
 python = "^3.12"
 gitpython = "*"
@@ -40,6 +44,11 @@ pypdf2 = "^3.0.1"
 xlrd = "^2.0.1"
 speechrecognition = "^3.14.1"
 openpyxl = "^3.1.5"
+
+# MCP Integration
+hanzo-mcp = { path = "../mcp", develop = true }
+mcp = ">=1.9.4"
+fastmcp = ">=2.9.2"
 
 # Optional dependencies for llama-index functionality
 llama-index = { version = "^0.12.29", optional = true }
