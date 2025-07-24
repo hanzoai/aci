@@ -1,0 +1,51 @@
+{
+  "name": "@hanzo/aci",
+  "version": "1.0.0",
+  "description": "Hanzo Agent Computer Interface - Cross-platform automation for AI agents",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "lint": "eslint src --ext .ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "automation",
+    "agent",
+    "computer",
+    "interface",
+    "cross-platform",
+    "ai",
+    "robot"
+  ],
+  "author": "Hanzo AI",
+  "license": "MIT",
+  "dependencies": {
+    "jsautogui": "^0.1.8",
+    "@nut-tree/nut-js": "^4.2.2",
+    "robotjs": "^0.6.0",
+    "sharp": "^0.33.5",
+    "tesseract.js": "^5.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "typescript": "^5.3.3",
+    "vitest": "^1.6.0",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hanzoai/aci.git"
+  },
+  "homepage": "https://hanzo.ai",
+  "bugs": {
+    "url": "https://github.com/hanzoai/aci/issues"
+  }
+}
