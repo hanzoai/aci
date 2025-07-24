@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hanzo-aci"
-version = "0.3.1"
+version = "1.0.0"
 description = "An Agent-Computer Interface (ACI) designed for software development agents Hanzo."
 authors = ["Hanzo"]
 license = "MIT"
