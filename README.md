@@ -1,3 +1,5 @@
+<p align="center"><img src=".github/hero.svg" alt="aci" width="880"></p>
+
 # Agent-Computer Interface (ACI) for Hanzo
 
 An Agent-Computer Interface (ACI) designed for [Hanzo IDE](https://github.com/hanzoai/ide). This package provides essential tools and interfaces for AI agents to interact with computer systems for software development tasks.
