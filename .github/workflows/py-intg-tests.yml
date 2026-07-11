@@ -10,7 +10,7 @@ on:
 jobs:
   test-on-linux:
     name: Python Unit Tests on Linux
-    runs-on: ubuntu-latest
+    runs-on: hanzo-build-linux-amd64
     strategy:
       matrix:
         python-version: ["3.12"]
