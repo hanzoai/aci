@@ -4,6 +4,8 @@
 
 An Agent-Computer Interface (ACI) designed for [Hanzo IDE](https://github.com/hanzoai/ide). This package provides essential tools and interfaces for AI agents to interact with computer systems for software development tasks.
 
+Forked from [OpenHands/openhands-aci](https://github.com/OpenHands/openhands-aci) (MIT).
+
 ## Features
 
 - **Code Editor Interface**: Sophisticated editing capabilities through the `editor` module
