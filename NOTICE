@@ -1,0 +1,22 @@
+aci
+Copyright (c) 2025 Hanzo Industries, Inc.
+
+Forked from openhands-aci (https://github.com/OpenHands/openhands-aci), licensed under MIT.
+Upstream is authored by the OpenHands project (formerly All-Hands-AI); the root commit and
+early history are by Hoang Tran <descience.thh10@gmail.com> and Xingyao Wang
+<xingyao@all-hands.dev>. The Python package was renamed openhands_aci -> hanzo_aci.
+
+This product includes software from openhands-aci (https://github.com/OpenHands/openhands-aci),
+licensed under MIT:
+
+    MIT License
+    Copyright (c) 2025
+
+This product includes software from LocAgent (https://github.com/gersteinlab/LocAgent),
+licensed under Apache-2.0, vendored upstream at hanzo_aci/indexing/locagent:
+
+    Copyright the LocAgent authors. Licensed under the Apache License, Version 2.0.
+    http://www.apache.org/licenses/LICENSE-2.0
+
+The upstream openhands-aci distribution does not ship a NOTICE file; this NOTICE provides
+attribution for the incorporated upstream works.
