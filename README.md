@@ -68,4 +68,4 @@ poetry run pytest
 
 ## License
 
-This project is licensed under the MIT License.
+MIT — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
