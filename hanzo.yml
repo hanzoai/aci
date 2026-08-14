@@ -1,0 +1,23 @@
+# Canonical CI/CD config for hanzoai/aci — read by the hanzoai/ci reusable
+# (.hanzo/workflows/cicd.yml) and by platform.hanzo.ai.
+#
+# No `images:`: aci is a Python library imported by agents, not a service.
+#
+# The repo had no gate. Its one workflow answered issue and pull-request
+# comments, so tests/unit — file validation, history, results, workspace root —
+# had never been run by CI in either place. They run now.
+#
+# tests/integration is excluded deliberately: it drives a real editor against a
+# workspace on disk and belongs to a harness, not to a push.
+test:
+  - name: unit
+    run: |
+      set -euo pipefail
+      command -v uv >/dev/null 2>&1 || {
+        curl -fsSL https://astral.sh/uv/install.sh | sh
+        export PATH="$HOME/.local/bin:$PATH"
+      }
+      uv venv .venv
+      . .venv/bin/activate
+      uv pip install -e . pytest
+      python -m pytest -q -p no:cacheprovider tests/unit
