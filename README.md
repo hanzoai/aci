@@ -2,6 +2,8 @@
 
 # Agent-Computer Interface (ACI) for Hanzo
 
+[![Open in Hanzo](https://hanzo.app/badges/open-in-hanzo.svg)](https://hanzo.app/dev/open?repo=github.com/hanzoai/aci&ref=main&action=open) [![Edit with Hanzo](https://hanzo.app/badges/edit-with-hanzo.svg)](https://hanzo.app/dev/open?repo=github.com/hanzoai/aci&ref=main&action=edit) [![Deploy with Hanzo](https://hanzo.app/badges/deploy-with-hanzo.svg)](https://hanzo.app/dev/open?repo=github.com/hanzoai/aci&ref=main&action=deploy)
+
 An Agent-Computer Interface (ACI) designed for [Hanzo IDE](https://github.com/hanzoai/ide). This package provides essential tools and interfaces for AI agents to interact with computer systems for software development tasks.
 
 
